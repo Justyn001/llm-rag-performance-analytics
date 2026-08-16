@@ -1,0 +1,55 @@
+# =============================================================================
+# GitHub Actions CI — Continuous Integration
+# =============================================================================
+# This runs automatically on every push/pull request to check:
+#   1. Code style (ruff lint) — "is the code clean and consistent?"
+#   2. Formatting (ruff format) — "is the code properly formatted?"
+#   3. Tests (pytest) — "does the code actually work?"
+#
+# Result: green ✅ or red ❌ badge on your GitHub repo
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Download your code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Install uv (our package manager)
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      # Step 3: Set up Python
+      - name: Set up Python
+        run: uv python install 3.12
+
+      # Step 4: Install project dependencies
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      # Step 5: Check code style
+      # "Lint" = automated code review
+      # Catches bugs, bad practices, unsorted imports, etc.
+      - name: Lint (ruff check)
+        run: uv run ruff check src/ tests/
+
+      # Step 6: Check formatting
+      # Makes sure all code looks consistent (indentation, spacing, etc.)
+      - name: Format check (ruff format)
+        run: uv run ruff format --check src/ tests/
+
+      # Step 7: Run tests
+      # Executes all test files in tests/ directory
+      - name: Run tests
+        run: uv run pytest tests/ -v
