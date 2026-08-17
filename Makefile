@@ -20,21 +20,21 @@ setup:
 dev:
 	uv run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 
-# --- Docker services (Qdrant + Ollama) ---
+# --- Docker services (Qdrant) ---
 docker-up:
 	docker compose up -d
 	@echo "✅ Qdrant: http://localhost:6333/dashboard"
-	@echo "✅ Ollama: http://localhost:11434"
+	@echo "💡 Start Ollama separately: ollama serve"
 
 docker-down:
 	docker compose down
 
-# --- Pull local LLM models (run after docker-up) ---
+# --- Pull local LLM models (Ollama runs natively) ---
 pull-models:
-	docker compose exec ollama ollama pull llama3.1:8b
-	docker compose exec ollama ollama pull mistral:7b
-	docker compose exec ollama ollama pull gemma2:9b
-	docker compose exec ollama ollama pull qwen3:8b
+	ollama pull llama3.1:8b
+	ollama pull mistral:7b
+	ollama pull gemma2:9b
+	ollama pull qwen3:8b
 	@echo "✅ All models pulled!"
 
 # --- Code quality ---
@@ -59,8 +59,8 @@ help:
 	@echo "Available commands:"
 	@echo "  make setup        — Install dependencies + create .env"
 	@echo "  make dev          — Start FastAPI dev server"
-	@echo "  make docker-up    — Start Qdrant + Ollama containers"
-	@echo "  make docker-down  — Stop Docker containers"
+	@echo "  make docker-up    — Start Qdrant (Docker)"
+	@echo "  make docker-down  — Stop Qdrant"
 	@echo "  make pull-models  — Download all local LLM models"
 	@echo "  make lint         — Check code style"
 	@echo "  make format       — Auto-format code"

@@ -1,12 +1,15 @@
 # =============================================================================
 # Docker Compose — LLM RAG Performance Analytics
 # =============================================================================
-# This file starts all services you need with ONE command:
-#   docker compose up -d
+# Start with: docker compose up -d
 #
 # Services:
 #   - qdrant: Vector database (stores document embeddings)
-#   - ollama: Local LLM server (runs Llama, Mistral, Gemma, Qwen)
+#
+# NOTE: Ollama runs NATIVELY (not in Docker) for direct GPU access.
+#   Install: curl -fsSL https://ollama.com/install.sh | sh
+#   Start:   ollama serve
+#   Pull:    ollama pull llama3.1:8b
 # =============================================================================
 
 services:
@@ -33,37 +36,6 @@ services:
       timeout: 5s
       retries: 3
 
-  # ---------------------------------------------------------------------------
-  # Ollama — Local LLM Server
-  # ---------------------------------------------------------------------------
-  # Runs LLM models locally on your GPU (RTX 5070 Ti).
-  # After starting, you need to pull models:
-  #   docker compose exec ollama ollama pull llama3.1:8b
-  #   docker compose exec ollama ollama pull mistral:7b
-  #   docker compose exec ollama ollama pull gemma2:9b
-  #   docker compose exec ollama ollama pull qwen3:8b
-  ollama:
-    image: ollama/ollama:latest
-    container_name: rag-ollama
-    ports:
-      - "11434:11434"   # Ollama REST API
-    volumes:
-      - ollama_data:/root/.ollama    # persist downloaded models
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
 # Named volumes — Docker manages the storage location
 volumes:
   qdrant_data:
-  ollama_data:
