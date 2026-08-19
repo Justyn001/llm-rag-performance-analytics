@@ -5,7 +5,7 @@ HOW THIS WORKS:
 - Pydantic Settings automatically reads from .env file
 - Each field = one environment variable (see .env.example)
 - Type validation happens automatically (wrong type = clear error)
-- You use it like: settings = get_settings(); print(settings.openai_api_key)
+- You use it like: settings = get_settings(); print(settings.groq_api_key)
 """
 
 from functools import lru_cache
@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     All values come from environment variables (or .env file).
     Field names are CASE-INSENSITIVE and map to env var names.
-    Example: openai_api_key -> OPENAI_API_KEY
+    Example: groq_api_key -> GROQ_API_KEY
     """
 
     model_config = SettingsConfigDict(
@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     )
 
     # --- API Keys ---
-    openai_api_key: str = ""
+    groq_api_key: str = ""
     google_api_key: str = ""
     mistral_api_key: str = ""
 
@@ -49,9 +49,9 @@ class Settings(BaseSettings):
         """Full Qdrant connection URL."""
         return f"http://{self.qdrant_host}:{self.qdrant_port}"
 
-    def has_openai(self) -> bool:
-        """Check if OpenAI API key is configured."""
-        return bool(self.openai_api_key and self.openai_api_key != "sk-your-openai-key-here")
+    def has_groq(self) -> bool:
+        """Check if Groq API key is configured."""
+        return bool(self.groq_api_key and self.groq_api_key != "your-groq-api-key-here")
 
     def has_google(self) -> bool:
         """Check if Google Gemini API key is configured."""
@@ -70,6 +70,6 @@ def get_settings() -> Settings:
     Usage:
         from src.config.settings import get_settings
         settings = get_settings()
-        print(settings.openai_api_key)
+        print(settings.groq_api_key)
     """
     return Settings()

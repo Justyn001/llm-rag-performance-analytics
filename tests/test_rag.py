@@ -4,7 +4,7 @@ Tests for the RAG pipeline components.
 
 from src.config.models import (
     GEMINI_FLASH,
-    GPT_4O_MINI,
+    GROQ_LLAMA,
     LLAMA_3_1_8B,
     MISTRAL_CLOUD,
     ModelProvider,
@@ -48,9 +48,9 @@ class TestLLMProviderConfig:
         assert LLAMA_3_1_8B.provider == ModelProvider.OLLAMA
         assert LLAMA_3_1_8B.model_id == "llama3.1:8b"
 
-    def test_gpt_uses_openai(self):
-        assert GPT_4O_MINI.provider == ModelProvider.OPENAI
-        assert GPT_4O_MINI.model_id == "gpt-4o-mini"
+    def test_groq_uses_groq(self):
+        assert GROQ_LLAMA.provider == ModelProvider.GROQ
+        assert GROQ_LLAMA.model_id == "llama-3.3-70b-versatile"
 
     def test_gemini_uses_google(self):
         assert GEMINI_FLASH.provider == ModelProvider.GOOGLE

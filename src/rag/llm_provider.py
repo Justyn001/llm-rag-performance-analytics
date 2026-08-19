@@ -41,8 +41,8 @@ def get_llm(model: ModelConfig) -> BaseChatModel:
 
     if model.provider == ModelProvider.OLLAMA:
         return _get_ollama_llm(model)
-    if model.provider == ModelProvider.OPENAI:
-        return _get_openai_llm(model)
+    if model.provider == ModelProvider.GROQ:
+        return _get_groq_llm(model)
     if model.provider == ModelProvider.GOOGLE:
         return _get_google_llm(model)
     if model.provider == ModelProvider.MISTRAL:
@@ -71,18 +71,18 @@ def _get_ollama_llm(model: ModelConfig) -> BaseChatModel:
     )
 
 
-def _get_openai_llm(model: ModelConfig) -> BaseChatModel:
-    """Cloud LLM via OpenAI API (GPT-4o-mini)."""
-    from langchain_openai import ChatOpenAI
+def _get_groq_llm(model: ModelConfig) -> BaseChatModel:
+    """Cloud LLM via Groq API (free, ultra-fast inference)."""
+    from langchain_groq import ChatGroq
 
     settings = get_settings()
-    if not settings.has_openai():
-        msg = "OpenAI API key not configured. Set OPENAI_API_KEY in .env"
+    if not settings.has_groq():
+        msg = "Groq API key not configured. Set GROQ_API_KEY in .env"
         raise ValueError(msg)
 
-    return ChatOpenAI(
+    return ChatGroq(
         model=model.model_id,
-        api_key=settings.openai_api_key,
+        api_key=settings.groq_api_key,
         temperature=model.temperature,
         max_tokens=model.max_tokens,
     )
@@ -154,7 +154,7 @@ def list_available_models() -> list[ModelConfig]:
         else:
             # Cloud models — check if API key is configured
             provider_checks = {
-                ModelProvider.OPENAI: settings.has_openai,
+                ModelProvider.GROQ: settings.has_groq,
                 ModelProvider.GOOGLE: settings.has_google,
                 ModelProvider.MISTRAL: settings.has_mistral,
             }

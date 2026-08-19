@@ -14,7 +14,7 @@ class ModelProvider(StrEnum):
     """Where the model runs."""
 
     OLLAMA = "ollama"  # Local models via Ollama
-    OPENAI = "openai"  # OpenAI API (GPT-4o-mini)
+    GROQ = "groq"  # Groq API (free, ultra-fast inference)
     GOOGLE = "google"  # Google Gemini API
     MISTRAL = "mistral"  # Mistral AI API
 
@@ -107,11 +107,11 @@ MISTRAL_CLOUD = ModelConfig(
     is_local=False,
 )
 
-GPT_4O_MINI = ModelConfig(
-    name="GPT-4o-mini",
-    provider=ModelProvider.OPENAI,
-    model_id="gpt-4o-mini",
-    description="OpenAI's cost-effective model — industry standard",
+GROQ_LLAMA = ModelConfig(
+    name="Groq Llama 3.3 70B",
+    provider=ModelProvider.GROQ,
+    model_id="llama-3.3-70b-versatile",
+    description="Llama 3.3 70B on Groq — free tier, ultra-fast inference",
     is_local=False,
 )
 
@@ -120,5 +120,5 @@ GPT_4O_MINI = ModelConfig(
 # =============================================================================
 
 LOCAL_MODELS = [LLAMA_3_1_8B, MISTRAL_7B, GEMMA_2_9B, QWEN_3_8B]
-CLOUD_MODELS = [GEMINI_FLASH, MISTRAL_CLOUD, GPT_4O_MINI]
+CLOUD_MODELS = [GEMINI_FLASH, MISTRAL_CLOUD, GROQ_LLAMA]
 ALL_MODELS = LOCAL_MODELS + CLOUD_MODELS
