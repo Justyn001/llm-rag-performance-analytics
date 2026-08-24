@@ -1,95 +1,131 @@
 /**
- * RAG Performance Analytics — Frontend Logic
+ * RAG Performance Analytics — Multi-Panel Frontend
+ *
+ * One question → sent to ALL panels simultaneously → compare side by side
  */
 
-const API = '';  // Same origin
+const API = '';
 
 // --- State ---
-let selectedModel = '';
 let selectedLang = 'en';
 let topK = 5;
+let panelCount = 2;
 let queryCount = 0;
 let models = [];
 
-// --- DOM Elements ---
-const modelSelect = document.getElementById('model-select');
+// --- DOM ---
 const topKSlider = document.getElementById('top-k-slider');
 const topKValue = document.getElementById('top-k-value');
 const queryForm = document.getElementById('query-form');
 const questionInput = document.getElementById('question-input');
 const submitBtn = document.getElementById('submit-btn');
-const chatContainer = document.getElementById('chat-container');
-const chatWelcome = document.getElementById('chat-welcome');
-const chatMessages = document.getElementById('chat-messages');
-const modelInfo = document.getElementById('model-info');
-const modelProvider = document.getElementById('model-provider');
-const modelType = document.getElementById('model-type');
-const modelDesc = document.getElementById('model-desc');
-const queriesCount = document.getElementById('queries-count');
+const panelsContainer = document.getElementById('panels-container');
+const queriesCountEl = document.getElementById('queries-count');
+const exampleBar = document.getElementById('example-bar');
 
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
     loadModels();
-    setupEventListeners();
+    setupControls();
 });
+
+// ===== MODELS =====
 
 async function loadModels() {
     try {
         const resp = await fetch(`${API}/api/models`);
         const data = await resp.json();
         models = data.models;
-
-        modelSelect.innerHTML = '';
-        if (models.length === 0) {
-            modelSelect.innerHTML = '<option value="">No models available</option>';
-            return;
-        }
-
-        // Group by type
-        const local = models.filter(m => m.is_local);
-        const cloud = models.filter(m => !m.is_local);
-
-        if (local.length) {
-            const group = document.createElement('optgroup');
-            group.label = '🖥️ Local (GPU)';
-            local.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m.name;
-                opt.textContent = m.name;
-                group.appendChild(opt);
-            });
-            modelSelect.appendChild(group);
-        }
-
-        if (cloud.length) {
-            const group = document.createElement('optgroup');
-            group.label = '☁️ Cloud (API)';
-            cloud.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m.name;
-                opt.textContent = m.name;
-                group.appendChild(opt);
-            });
-            modelSelect.appendChild(group);
-        }
-
-        selectedModel = models[0].name;
-        modelSelect.value = selectedModel;
-        updateModelInfo(models[0]);
+        buildPanels();
     } catch (err) {
-        modelSelect.innerHTML = '<option value="">Error loading models</option>';
         console.error('Failed to load models:', err);
+        models = [];
+        buildPanels();
     }
 }
 
-function setupEventListeners() {
-    // Model select
-    modelSelect.addEventListener('change', (e) => {
-        selectedModel = e.target.value;
-        const model = models.find(m => m.name === selectedModel);
-        if (model) updateModelInfo(model);
+// ===== PANELS =====
+
+function buildPanels() {
+    panelsContainer.innerHTML = '';
+    panelsContainer.dataset.count = panelCount;
+
+    for (let i = 0; i < panelCount; i++) {
+        const panel = createPanel(i);
+        panelsContainer.appendChild(panel);
+    }
+}
+
+function createPanel(index) {
+    const panel = document.createElement('div');
+    panel.className = 'panel';
+    panel.dataset.index = index;
+
+    // Build model select options grouped by type
+    let options = '';
+    const local = models.filter(m => m.is_local);
+    const cloud = models.filter(m => !m.is_local);
+
+    if (local.length) {
+        options += '<optgroup label="🖥️ Local (GPU)">';
+        local.forEach(m => {
+            const selected = getDefaultModel(index) === m.name ? ' selected' : '';
+            options += `<option value="${esc(m.name)}"${selected}>${esc(m.name)}</option>`;
+        });
+        options += '</optgroup>';
+    }
+
+    if (cloud.length) {
+        options += '<optgroup label="☁️ Cloud (API)">';
+        cloud.forEach(m => {
+            const selected = getDefaultModel(index) === m.name ? ' selected' : '';
+            options += `<option value="${esc(m.name)}"${selected}>${esc(m.name)}</option>`;
+        });
+        options += '</optgroup>';
+    }
+
+    if (!models.length) {
+        options = '<option value="">No models</option>';
+    }
+
+    const model = models.find(m => m.name === getDefaultModel(index));
+    const badgeClass = model && model.is_local ? 'badge-local' : 'badge-cloud';
+    const badgeText = model && model.is_local ? 'LOCAL' : 'CLOUD';
+
+    panel.innerHTML = `
+        <div class="panel-header">
+            <div class="panel-number">${index + 1}</div>
+            <select class="panel-select" data-panel="${index}">${options}</select>
+            <span class="panel-type-badge ${badgeClass}" data-badge="${index}">${badgeText}</span>
+        </div>
+        <div class="panel-chat" data-chat="${index}">
+            <div class="panel-empty">Ask a question below...</div>
+        </div>
+    `;
+
+    // Update badge on model change
+    const select = panel.querySelector('.panel-select');
+    select.addEventListener('change', () => {
+        const m = models.find(x => x.name === select.value);
+        const badge = panel.querySelector('.panel-type-badge');
+        if (m) {
+            badge.className = `panel-type-badge ${m.is_local ? 'badge-local' : 'badge-cloud'}`;
+            badge.textContent = m.is_local ? 'LOCAL' : 'CLOUD';
+        }
     });
 
+    return panel;
+}
+
+function getDefaultModel(index) {
+    if (!models.length) return '';
+    // Distribute different models to different panels
+    return models[index % models.length].name;
+}
+
+// ===== CONTROLS =====
+
+function setupControls() {
     // Language toggle
     document.querySelectorAll('.toggle-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -105,13 +141,21 @@ function setupEventListeners() {
         topKValue.textContent = topK;
     });
 
+    // Panel count
+    document.querySelectorAll('.panel-count-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.panel-count-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            panelCount = parseInt(btn.dataset.count);
+            buildPanels();
+        });
+    });
+
     // Form submit
     queryForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const question = questionInput.value.trim();
-        if (question && selectedModel) {
-            sendQuery(question);
-        }
+        const q = questionInput.value.trim();
+        if (q) sendToAllPanels(q);
     });
 
     // Example questions
@@ -119,29 +163,56 @@ function setupEventListeners() {
         btn.addEventListener('click', () => {
             const q = btn.dataset.q;
             questionInput.value = q;
-            if (selectedModel) sendQuery(q);
+            sendToAllPanels(q);
         });
     });
 }
 
-function updateModelInfo(model) {
-    modelInfo.style.display = 'block';
-    modelProvider.textContent = `Provider: ${model.provider}`;
-    modelType.textContent = model.is_local ? '🖥️ Local (GPU)' : '☁️ Cloud (API)';
-    modelDesc.textContent = model.description;
+// ===== QUERY =====
+
+async function sendToAllPanels(question) {
+    submitBtn.disabled = true;
+    questionInput.value = '';
+    exampleBar.style.display = 'none';
+
+    // Send to each panel in parallel
+    const promises = [];
+    for (let i = 0; i < panelCount; i++) {
+        const select = document.querySelector(`[data-panel="${i}"]`);
+        const modelName = select ? select.value : '';
+        if (modelName) {
+            promises.push(sendToPanel(i, question, modelName));
+        }
+    }
+
+    await Promise.allSettled(promises);
+
+    queryCount++;
+    queriesCountEl.textContent = queryCount;
+    submitBtn.disabled = false;
+    questionInput.focus();
 }
 
-async function sendQuery(question) {
-    // Hide welcome, show chat
-    chatWelcome.style.display = 'none';
+async function sendToPanel(panelIndex, question, modelName) {
+    const chat = document.querySelector(`[data-chat="${panelIndex}"]`);
+    if (!chat) return;
 
-    // Add question bubble
-    addMessage('question', question);
-    questionInput.value = '';
-    submitBtn.disabled = true;
+    // Clear "empty" placeholder
+    const empty = chat.querySelector('.panel-empty');
+    if (empty) empty.remove();
 
-    // Add loading bubble
-    const loadingId = addLoadingMessage();
+    // Add question
+    const qDiv = document.createElement('div');
+    qDiv.className = 'p-msg p-question';
+    qDiv.textContent = question;
+    chat.appendChild(qDiv);
+
+    // Add loading
+    const loadDiv = document.createElement('div');
+    loadDiv.className = 'p-msg';
+    loadDiv.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+    chat.appendChild(loadDiv);
+    chat.scrollTop = chat.scrollHeight;
 
     try {
         const resp = await fetch(`${API}/api/query`, {
@@ -149,7 +220,7 @@ async function sendQuery(question) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 question,
-                model_name: selectedModel,
+                model_name: modelName,
                 language: selectedLang,
                 top_k: topK,
             }),
@@ -161,103 +232,52 @@ async function sendQuery(question) {
         }
 
         const data = await resp.json();
+        loadDiv.remove();
 
-        // Remove loading, add answer
-        removeMessage(loadingId);
-        addAnswerMessage(data);
+        // Add answer with timing
+        const ctxId = `ctx-${panelIndex}-${Date.now()}`;
+        let ctxHtml = '';
+        if (data.contexts && data.contexts.length) {
+            ctxHtml = data.contexts.map(c => `
+                <div class="p-ctx-chunk">
+                    <div class="p-ctx-title">${esc(c.title)}</div>
+                    <div>${esc(c.content.substring(0, 150))}...</div>
+                </div>
+            `).join('');
+        }
 
-        queryCount++;
-        queriesCount.textContent = queryCount;
-    } catch (err) {
-        removeMessage(loadingId);
-        addMessage('answer', `❌ Error: ${err.message}`, true);
-    }
-
-    submitBtn.disabled = false;
-    questionInput.focus();
-}
-
-function addMessage(type, content) {
-    const div = document.createElement('div');
-    div.className = `message message-${type}`;
-    div.innerHTML = `<div class="bubble">${escapeHtml(content)}</div>`;
-    chatMessages.appendChild(div);
-    scrollToBottom();
-    return div;
-}
-
-function addLoadingMessage() {
-    const id = 'loading-' + Date.now();
-    const div = document.createElement('div');
-    div.className = 'message message-answer';
-    div.id = id;
-    div.innerHTML = `
-        <div class="bubble">
-            <div class="loading-dots"><span></span><span></span><span></span></div>
-        </div>
-    `;
-    chatMessages.appendChild(div);
-    scrollToBottom();
-    return id;
-}
-
-function removeMessage(id) {
-    const el = document.getElementById(id);
-    if (el) el.remove();
-}
-
-function addAnswerMessage(data) {
-    const ctxId = 'ctx-' + Date.now();
-    const div = document.createElement('div');
-    div.className = 'message message-answer';
-
-    let contextsHtml = '';
-    if (data.contexts && data.contexts.length) {
-        contextsHtml = data.contexts.map(c => `
-            <div class="context-chunk">
-                <div class="context-chunk-title">${escapeHtml(c.title)}</div>
-                <div>${escapeHtml(c.content.substring(0, 200))}...</div>
+        const aDiv = document.createElement('div');
+        aDiv.className = 'p-msg';
+        aDiv.innerHTML = `
+            <div class="p-answer">${esc(data.answer)}</div>
+            <div class="p-timing">
+                <span class="p-badge">⏱ <span class="val">${data.retrieval_time_ms.toFixed(0)}ms</span> retrieval</span>
+                <span class="p-badge">🤖 <span class="val">${data.generation_time_ms.toFixed(0)}ms</span> generation</span>
+                <span class="p-badge">Σ <span class="val">${data.total_time_ms.toFixed(0)}ms</span> total</span>
             </div>
-        `).join('');
+            ${ctxHtml ? `
+                <button class="p-context-btn" onclick="document.getElementById('${ctxId}').classList.toggle('open')">
+                    📄 ${data.contexts.length} chunks
+                </button>
+                <div class="p-context" id="${ctxId}">${ctxHtml}</div>
+            ` : ''}
+        `;
+        chat.appendChild(aDiv);
+    } catch (err) {
+        loadDiv.remove();
+        const eDiv = document.createElement('div');
+        eDiv.className = 'p-msg';
+        eDiv.innerHTML = `<div class="p-answer" style="border-color:var(--error);color:var(--error)">❌ ${esc(err.message)}</div>`;
+        chat.appendChild(eDiv);
     }
 
-    div.innerHTML = `
-        <div class="bubble">${escapeHtml(data.answer)}</div>
-        <div class="timing-bar">
-            <span class="timing-badge model-badge">
-                <span class="label">Model</span>
-                <span class="value">${escapeHtml(data.model_name)}</span>
-            </span>
-            <span class="timing-badge">
-                <span class="label">Retrieval</span>
-                <span class="value">${data.retrieval_time_ms.toFixed(0)}ms</span>
-            </span>
-            <span class="timing-badge">
-                <span class="label">Generation</span>
-                <span class="value">${data.generation_time_ms.toFixed(0)}ms</span>
-            </span>
-            <span class="timing-badge">
-                <span class="label">Total</span>
-                <span class="value">${data.total_time_ms.toFixed(0)}ms</span>
-            </span>
-        </div>
-        ${contextsHtml ? `
-            <button class="context-toggle" onclick="document.getElementById('${ctxId}').classList.toggle('open')">
-                📄 Show ${data.contexts.length} context chunks
-            </button>
-            <div class="context-panel" id="${ctxId}">${contextsHtml}</div>
-        ` : ''}
-    `;
-    chatMessages.appendChild(div);
-    scrollToBottom();
+    chat.scrollTop = chat.scrollHeight;
 }
 
-function scrollToBottom() {
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-}
+// ===== UTILS =====
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+function esc(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
 }

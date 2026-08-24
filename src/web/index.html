@@ -4,93 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RAG Performance Analytics</title>
-    <meta name="description" content="Performance benchmark and evaluation of local vs. cloud LLMs using Retrieval-Augmented Generation">
+    <meta name="description" content="Compare local vs cloud LLMs using Retrieval-Augmented Generation">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=2">
 </head>
 <body>
-    <!-- ===== SIDEBAR ===== -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo">
-                <span class="logo-icon">⚡</span>
-                <span class="logo-text">RAG Analytics</span>
-            </div>
+    <!-- ===== TOP BAR ===== -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <span class="logo-icon">⚡</span>
+            <span class="logo-text">RAG Analytics</span>
         </div>
 
-        <div class="sidebar-section">
-            <label class="sidebar-label">Model</label>
-            <select id="model-select" class="select-input">
-                <option value="">Loading models...</option>
-            </select>
-        </div>
-
-        <div class="sidebar-section">
-            <label class="sidebar-label">Language</label>
-            <div class="toggle-group">
-                <button class="toggle-btn active" data-lang="en">English</button>
-                <button class="toggle-btn" data-lang="pl">Polski</button>
-            </div>
-        </div>
-
-        <div class="sidebar-section">
-            <label class="sidebar-label">Context chunks (top_k)</label>
-            <input type="range" id="top-k-slider" min="1" max="15" value="5" class="slider">
-            <span id="top-k-value" class="slider-value">5</span>
-        </div>
-
-        <div class="sidebar-section model-info" id="model-info" style="display:none">
-            <label class="sidebar-label">Model Info</label>
-            <div class="info-card">
-                <p id="model-provider" class="info-row"></p>
-                <p id="model-type" class="info-row"></p>
-                <p id="model-desc" class="info-row info-desc"></p>
-            </div>
-        </div>
-
-        <div class="sidebar-footer">
-            <div class="stats-mini">
-                <span id="queries-count">0</span> queries
-            </div>
-        </div>
-    </aside>
-
-    <!-- ===== MAIN CONTENT ===== -->
-    <main class="main">
-        <!-- Header -->
-        <header class="header">
-            <h1>RAG Performance Analytics</h1>
-            <p class="subtitle">Ask questions • Compare models • Analyze performance</p>
-        </header>
-
-        <!-- Chat Area -->
-        <div class="chat-container" id="chat-container">
-            <div class="chat-welcome" id="chat-welcome">
-                <div class="welcome-icon">🔍</div>
-                <h2>Ask anything</h2>
-                <p>Select a model and ask a question. The system will retrieve relevant context from the knowledge base and generate an answer.</p>
-                <div class="example-questions">
-                    <button class="example-btn" data-q="What is photosynthesis?">What is photosynthesis?</button>
-                    <button class="example-btn" data-q="Who wrote Romeo and Juliet?">Who wrote Romeo and Juliet?</button>
-                    <button class="example-btn" data-q="What is the speed of light?">What is the speed of light?</button>
+        <div class="topbar-controls">
+            <div class="control-group">
+                <label class="control-label">Language</label>
+                <div class="toggle-group">
+                    <button class="toggle-btn active" data-lang="en">EN</button>
+                    <button class="toggle-btn" data-lang="pl">PL</button>
                 </div>
             </div>
-            <div class="chat-messages" id="chat-messages"></div>
+
+            <div class="control-group">
+                <label class="control-label">Chunks</label>
+                <div class="slider-wrap">
+                    <input type="range" id="top-k-slider" min="1" max="15" value="5" class="slider">
+                    <span id="top-k-value" class="slider-value">5</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Panels</label>
+                <div class="panel-count-group">
+                    <button class="panel-count-btn" data-count="1">1</button>
+                    <button class="panel-count-btn active" data-count="2">2</button>
+                    <button class="panel-count-btn" data-count="3">3</button>
+                    <button class="panel-count-btn" data-count="4">4</button>
+                </div>
+            </div>
         </div>
 
-        <!-- Input Area -->
-        <div class="input-area">
-            <form id="query-form" class="input-form">
-                <input type="text" id="question-input" placeholder="Ask a question..." autocomplete="off" required>
-                <button type="submit" id="submit-btn" class="send-btn">
-                    <span class="send-icon">→</span>
-                </button>
-            </form>
+        <div class="topbar-stats">
+            <span id="queries-count">0</span> queries
         </div>
+    </header>
+
+    <!-- ===== PANELS GRID ===== -->
+    <main class="panels-container" id="panels-container" data-count="2">
+        <!-- Panels are created dynamically by JS -->
     </main>
 
-    <script src="/js/app.js"></script>
+    <!-- ===== SHARED INPUT ===== -->
+    <footer class="input-area">
+        <div class="example-bar" id="example-bar">
+            <button class="example-btn" data-q="What is photosynthesis?">What is photosynthesis?</button>
+            <button class="example-btn" data-q="Who wrote Romeo and Juliet?">Who wrote Romeo and Juliet?</button>
+            <button class="example-btn" data-q="What is the speed of light?">What is the speed of light?</button>
+            <button class="example-btn" data-q="How does the human heart work?">How does the human heart work?</button>
+        </div>
+        <form id="query-form" class="input-form">
+            <input type="text" id="question-input" placeholder="Ask a question — it goes to all panels simultaneously..." autocomplete="off" required>
+            <button type="submit" id="submit-btn" class="send-btn">
+                <span class="send-icon">→</span>
+            </button>
+        </form>
+    </footer>
+
+    <script src="/js/app.js?v=2"></script>
 </body>
 </html>

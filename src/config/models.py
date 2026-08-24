@@ -107,11 +107,11 @@ MISTRAL_CLOUD = ModelConfig(
     is_local=False,
 )
 
-GROQ_LLAMA = ModelConfig(
-    name="Groq Llama 3.3 70B",
+GROQ_QWEN = ModelConfig(
+    name="Groq Qwen 3.6 27B",
     provider=ModelProvider.GROQ,
-    model_id="llama-3.3-70b-versatile",
-    description="Llama 3.3 70B on Groq — free tier, ultra-fast inference",
+    model_id="qwen/qwen3.6-27b",
+    description="Qwen 3.6 27B on Groq — free tier, ultra-fast inference",
     is_local=False,
 )
 
@@ -120,5 +120,5 @@ GROQ_LLAMA = ModelConfig(
 # =============================================================================
 
 LOCAL_MODELS = [LLAMA_3_1_8B, MISTRAL_7B, GEMMA_2_9B, QWEN_3_8B]
-CLOUD_MODELS = [GEMINI_FLASH, MISTRAL_CLOUD, GROQ_LLAMA]
+CLOUD_MODELS = [GEMINI_FLASH, MISTRAL_CLOUD, GROQ_QWEN]
 ALL_MODELS = LOCAL_MODELS + CLOUD_MODELS

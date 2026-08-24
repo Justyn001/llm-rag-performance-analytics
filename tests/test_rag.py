@@ -4,7 +4,7 @@ Tests for the RAG pipeline components.
 
 from src.config.models import (
     GEMINI_FLASH,
-    GROQ_LLAMA,
+    GROQ_QWEN,
     LLAMA_3_1_8B,
     MISTRAL_CLOUD,
     ModelProvider,
@@ -49,8 +49,8 @@ class TestLLMProviderConfig:
         assert LLAMA_3_1_8B.model_id == "llama3.1:8b"
 
     def test_groq_uses_groq(self):
-        assert GROQ_LLAMA.provider == ModelProvider.GROQ
-        assert GROQ_LLAMA.model_id == "llama-3.3-70b-versatile"
+        assert GROQ_QWEN.provider == ModelProvider.GROQ
+        assert GROQ_QWEN.model_id == "qwen/qwen3.6-27b"
 
     def test_gemini_uses_google(self):
         assert GEMINI_FLASH.provider == ModelProvider.GOOGLE

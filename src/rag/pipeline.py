@@ -125,6 +125,14 @@ class RAGPipeline:
         # ---- Build response ----
         answer = response.content if hasattr(response, "content") else str(response)
 
+        # Strip chain-of-thought from models that include it (Qwen, DeepSeek, etc.)
+        # Case 1: <think>...</think> present → take everything AFTER last </think>
+        # Case 2: <think>... (truncated, no closing tag) → discard thinking entirely
+        if "</think>" in answer:
+            answer = answer.split("</think>")[-1].strip()
+        elif "<think>" in answer:
+            answer = answer.split("<think>")[0].strip()
+
         rag_response = RAGResponse(
             answer=answer,
             question=question,
