@@ -27,17 +27,17 @@ class TestSettings:
 class TestModelConfig:
     """Test that model configurations are correct."""
 
-    def test_has_four_local_models(self):
-        """We should have exactly 4 local models."""
+    def test_has_local_models(self):
+        """We should have 4 local models."""
         assert len(LOCAL_MODELS) == 4
 
-    def test_has_three_cloud_models(self):
-        """We should have exactly 3 cloud models."""
-        assert len(CLOUD_MODELS) == 3
+    def test_has_cloud_models(self):
+        """We should have 4 cloud models."""
+        assert len(CLOUD_MODELS) == 4
 
     def test_all_models_total(self):
-        """Total should be 7 models (4 local + 3 cloud)."""
-        assert len(ALL_MODELS) == 7
+        """Total should be 8 models (4 local + 4 cloud)."""
+        assert len(ALL_MODELS) == 8
 
     def test_local_models_use_ollama(self):
         """All local models should use Ollama provider."""
