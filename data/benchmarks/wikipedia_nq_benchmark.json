@@ -1,0 +1,302 @@
+[
+    {
+        "question": "What is photosynthesis and how does it work?",
+        "expected_answer": "Process by which plants convert light energy into chemical energy",
+        "source": "Simple Wikipedia — Biology",
+        "answerable": true
+    },
+    {
+        "question": "What is the population of Cuba?",
+        "expected_answer": "Close to 13 million",
+        "source": "Simple Wikipedia — Cuba",
+        "answerable": true
+    },
+    {
+        "question": "Where is Las Vegas located?",
+        "expected_answer": "Las Vegas is a city in the American state of Nevada",
+        "source": "Simple Wikipedia — Las Vegas",
+        "answerable": true
+    },
+    {
+        "question": "What is algebra?",
+        "expected_answer": "A part of mathematics dealing with reunion of broken parts",
+        "source": "Simple Wikipedia — Algebra",
+        "answerable": true
+    },
+    {
+        "question": "Who invented calculus?",
+        "expected_answer": "Isaac Newton in England and Gottfried Leibniz in Germany in the 1670s and 1680s",
+        "source": "Simple Wikipedia — Calculus",
+        "answerable": true
+    },
+    {
+        "question": "What is the Vatican City?",
+        "expected_answer": "The headquarters of the Roman Catholic Church",
+        "source": "Simple Wikipedia — Vatican City",
+        "answerable": true
+    },
+    {
+        "question": "What are the three main kinds of radioactive decay?",
+        "expected_answer": "Alpha, beta, and gamma",
+        "source": "Simple Wikipedia — Radioactivity",
+        "answerable": true
+    },
+    {
+        "question": "What is Belgium famous for?",
+        "expected_answer": "Beer, chocolate, waffles and french fries",
+        "source": "Simple Wikipedia — Belgium",
+        "answerable": true
+    },
+    {
+        "question": "What is a string quartet?",
+        "expected_answer": "A piece of music written for two violins, a viola, and a cello",
+        "source": "Simple Wikipedia — Music",
+        "answerable": true
+    },
+    {
+        "question": "How does probability work with coin tosses?",
+        "expected_answer": "By throwing a coin, half of the time it lands heads, half tails",
+        "source": "Simple Wikipedia — Probability",
+        "answerable": true
+    },
+    {
+        "question": "What is the mass of an object?",
+        "expected_answer": "A measure of the amount of matter in a body",
+        "source": "Simple Wikipedia — Physics",
+        "answerable": true
+    },
+    {
+        "question": "What started the Space Race?",
+        "expected_answer": "It began in the 1950s between the United States and the Soviet Union",
+        "source": "Simple Wikipedia — Space Race",
+        "answerable": true
+    },
+    {
+        "question": "What is a year in astronomical terms?",
+        "expected_answer": "About 365 days, the time it takes Earth to orbit the Sun",
+        "source": "Simple Wikipedia — Year",
+        "answerable": true
+    },
+    {
+        "question": "What is a peer-to-peer system?",
+        "expected_answer": "A system where every computer is both a client and a server to the others",
+        "source": "Simple Wikipedia — Computer Networks",
+        "answerable": true
+    },
+    {
+        "question": "What is the metric system?",
+        "expected_answer": "The newest measurement system using units based on 10, 100, or 1000",
+        "source": "Simple Wikipedia — Units",
+        "answerable": true
+    },
+    {
+        "question": "What is representative democracy?",
+        "expected_answer": "A system where people elect representatives to make decisions",
+        "source": "Simple Wikipedia — Democracy",
+        "answerable": true
+    },
+    {
+        "question": "What are electron microscopes?",
+        "expected_answer": "Microscopes that fire cathode rays to produce magnified images",
+        "source": "Simple Wikipedia — Microscopes",
+        "answerable": true
+    },
+    {
+        "question": "What is oil?",
+        "expected_answer": "A word used for many different kinds of liquids that usually do not mix with water",
+        "source": "Simple Wikipedia — Oil",
+        "answerable": true
+    },
+    {
+        "question": "What is art?",
+        "expected_answer": "A creative activity that produces a product, a diverse range of human activities",
+        "source": "Simple Wikipedia — Art",
+        "answerable": true
+    },
+    {
+        "question": "What is biology?",
+        "expected_answer": "Biology looks at how animals and other living things behave and work",
+        "source": "Simple Wikipedia — Biology",
+        "answerable": true
+    },
+    {
+        "question": "What happened in the Industrial Revolution?",
+        "expected_answer": "People began to invent machines to make things quickly and cheaply in the late 18th century",
+        "source": "Simple Wikipedia — Industrial Revolution",
+        "answerable": true
+    },
+    {
+        "question": "What is the Amazon rainforest?",
+        "expected_answer": "A moist grassy land where many wild animals live, containing the Amazon river",
+        "source": "Simple Wikipedia — Amazon",
+        "answerable": true
+    },
+    {
+        "question": "When did Japan surrender in World War II?",
+        "expected_answer": "August 14, 1945",
+        "source": "Simple Wikipedia — World War II",
+        "answerable": true
+    },
+    {
+        "question": "What were ancient Greek plays like?",
+        "expected_answer": "They were performed outdoors in large amphitheatres so many people could see them",
+        "source": "Simple Wikipedia — Ancient Greece",
+        "answerable": true
+    },
+    {
+        "question": "How does Mandarin Chinese use tones?",
+        "expected_answer": "Different tones change meaning — mother, hemp, horse, scold all sound similar",
+        "source": "Simple Wikipedia — Mandarin",
+        "answerable": true
+    },
+    {
+        "question": "What is the standard deviation used for?",
+        "expected_answer": "About 95 of every 100 measurements will be within two standard deviations of the average",
+        "source": "Simple Wikipedia — Statistics",
+        "answerable": true
+    },
+    {
+        "question": "What was the Olmec culture?",
+        "expected_answer": "The earliest culture in Mexico before the Europeans came",
+        "source": "Simple Wikipedia — Mexico",
+        "answerable": true
+    },
+    {
+        "question": "How did Henry VIII change the church?",
+        "expected_answer": "He made himself the new head of the Church of England",
+        "source": "Simple Wikipedia — Henry VIII",
+        "answerable": true
+    },
+    {
+        "question": "What is the history of anatomy?",
+        "expected_answer": "Dates back to 1600 BC when Egyptians began studying human anatomy",
+        "source": "Simple Wikipedia — Anatomy",
+        "answerable": true
+    },
+    {
+        "question": "What was the metre originally defined as?",
+        "expected_answer": "Before 1982, one meter was defined as a specific distance using standard measurements",
+        "source": "Simple Wikipedia — Units",
+        "answerable": true
+    },
+    {
+        "question": "What is knowledge?",
+        "expected_answer": "Can refer to a theoretical or practical understanding of a subject",
+        "source": "Simple Wikipedia — Knowledge",
+        "answerable": true
+    },
+    {
+        "question": "What is the Challenger Deep?",
+        "expected_answer": "The lowest point below sea level in the Mariana Trench",
+        "source": "Simple Wikipedia — Geography",
+        "answerable": true
+    },
+    {
+        "question": "What is the Parliament of Finland?",
+        "expected_answer": "Elections select 200 members to the Parliament of Finland",
+        "source": "Simple Wikipedia — Finland",
+        "answerable": true
+    },
+    {
+        "question": "What is blasphemy?",
+        "expected_answer": "Religious profanity is called blasphemy",
+        "source": "Simple Wikipedia — Religion",
+        "answerable": true
+    },
+    {
+        "question": "When did North and South Dakota become US states?",
+        "expected_answer": "November 2, 1889, becoming the 39th and 40th states",
+        "source": "Simple Wikipedia — US States",
+        "answerable": true
+    },
+    {
+        "question": "What are particle accelerators used for?",
+        "expected_answer": "Physicists used them to go deeper into the mysteries of the atom",
+        "source": "Simple Wikipedia — Physics",
+        "answerable": true
+    },
+    {
+        "question": "How were apples grown in North America?",
+        "expected_answer": "Many apples are grown in temperate parts of the United States and Canada",
+        "source": "Simple Wikipedia — Apples",
+        "answerable": true
+    },
+    {
+        "question": "What is Windows used for?",
+        "expected_answer": "Has several kinds of applications including games, word processors",
+        "source": "Simple Wikipedia — Windows",
+        "answerable": true
+    },
+    {
+        "question": "What is the theory of gravitation?",
+        "expected_answer": "Needed for accurate predictions of the Universe's past and future",
+        "source": "Simple Wikipedia — Physics",
+        "answerable": true
+    },
+    {
+        "question": "What is a service economy?",
+        "expected_answer": "All the service trades form a service economy",
+        "source": "Simple Wikipedia — Economics",
+        "answerable": true
+    },
+    {
+        "question": "Who is the current king of France?",
+        "expected_answer": "unanswerable",
+        "source": "Control question — no answer in KB",
+        "answerable": false
+    },
+    {
+        "question": "What is the latest iPhone model?",
+        "expected_answer": "unanswerable",
+        "source": "Control question — no answer in KB",
+        "answerable": false
+    },
+    {
+        "question": "What are the rules of Quidditch?",
+        "expected_answer": "unanswerable",
+        "source": "Control question — fictional topic",
+        "answerable": false
+    },
+    {
+        "question": "Who won the 2024 US presidential election?",
+        "expected_answer": "unanswerable",
+        "source": "Control question — too recent for KB",
+        "answerable": false
+    },
+    {
+        "question": "What is the recipe for tiramisu?",
+        "expected_answer": "unanswerable",
+        "source": "Control question — not in KB",
+        "answerable": false
+    },
+    {
+        "question": "How do you program in Rust?",
+        "expected_answer": "unanswerable",
+        "source": "Control question — not in KB",
+        "answerable": false
+    },
+    {
+        "question": "What is the plot of the movie Inception?",
+        "expected_answer": "unanswerable",
+        "source": "Control question — not in KB",
+        "answerable": false
+    },
+    {
+        "question": "What is the capital of Wakanda?",
+        "expected_answer": "unanswerable",
+        "source": "Control question — fictional place",
+        "answerable": false
+    },
+    {
+        "question": "How many followers does Elon Musk have on Twitter?",
+        "expected_answer": "unanswerable",
+        "source": "Control question — dynamic data",
+        "answerable": false
+    },
+    {
+        "question": "What is the best cryptocurrency to invest in?",
+        "expected_answer": "unanswerable",
+        "source": "Control question — opinion, not in KB",
+        "answerable": false
+    }
+]

@@ -8,17 +8,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css?v=2">
+    <link rel="stylesheet" href="/css/style.css?v=9">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <!-- ===== TOP BAR ===== -->
     <header class="topbar">
         <div class="topbar-left">
-            <span class="logo-icon">⚡</span>
             <span class="logo-text">RAG Analytics</span>
         </div>
 
         <div class="topbar-controls">
+            <!-- Tab switcher -->
+            <div class="control-group">
+                <div class="tab-group">
+                    <button class="tab-btn active" data-tab="chat">💬 Chat</button>
+                    <button class="tab-btn" data-tab="analytics">📊 Analytics</button>
+                </div>
+            </div>
+
             <div class="control-group">
                 <label class="control-label">Language</label>
                 <div class="toggle-group">
@@ -35,6 +43,24 @@
                 </div>
             </div>
 
+            <!-- RAG Config -->
+            <div class="control-group">
+                <label class="control-label">RAG Config</label>
+                <select id="rag-config-select" class="topbar-select">
+                    <option value="basic-512">Basic 512</option>
+                </select>
+            </div>
+
+            <!-- Dataset -->
+            <div class="control-group">
+                <label class="control-label">Dataset</label>
+                <select id="dataset-select" class="topbar-select">
+                    <option value="wiki">Wikipedia</option>
+                    <option value="squad">SQuAD</option>
+                    <option value="trivia">TriviaQA</option>
+                </select>
+            </div>
+
             <div class="control-group">
                 <label class="control-label">Panels</label>
                 <div class="panel-count-group">
@@ -44,20 +70,48 @@
                     <button class="panel-count-btn" data-count="4">4</button>
                 </div>
             </div>
+
+            <!-- Auto Test -->
+            <div class="control-group">
+                <label class="control-label">Auto Test</label>
+                <div class="autotest-group">
+                    <select id="test-set-select" class="autotest-select">
+                        <option value="">Loading...</option>
+                    </select>
+                    <select id="test-count-select" class="autotest-select autotest-count">
+                        <option value="5">5 Q</option>
+                        <option value="10" selected>10 Q</option>
+                        <option value="20">20 Q</option>
+                        <option value="30">30 Q</option>
+                        <option value="50">50 Q</option>
+                    </select>
+                    <button id="autotest-btn" class="autotest-btn" disabled>▶ Run</button>
+                    <button id="autotest-stop-btn" class="autotest-stop-btn hidden">⏹ Stop</button>
+                </div>
+            </div>
+
+            <button class="reset-btn" id="reset-btn" title="Reset all chats and analytics">🗑️ Reset</button>
         </div>
 
         <div class="topbar-stats">
             <span id="queries-count">0</span> queries
+            <span id="autotest-progress" class="hidden"></span>
         </div>
     </header>
 
-    <!-- ===== PANELS GRID ===== -->
-    <main class="panels-container" id="panels-container" data-count="2">
-        <!-- Panels are created dynamically by JS -->
+    <!-- ===== CHAT VIEW ===== -->
+    <main class="panels-container" id="chat-view" data-count="2">
     </main>
 
+    <!-- ===== ANALYTICS VIEW ===== -->
+    <main class="panels-container hidden" id="analytics-view" data-count="2">
+    </main>
+    <div class="report-bar hidden" id="report-bar">
+        <button id="download-report-btn" class="download-report-btn">📥 Download Report</button>
+    </div>
+
     <!-- ===== SHARED INPUT ===== -->
-    <footer class="input-area">
+    <footer class="input-area" id="input-area">
         <div class="example-bar" id="example-bar">
             <button class="example-btn" data-q="What is photosynthesis?">What is photosynthesis?</button>
             <button class="example-btn" data-q="Who wrote Romeo and Juliet?">Who wrote Romeo and Juliet?</button>
@@ -72,6 +126,6 @@
         </form>
     </footer>
 
-    <script src="/js/app.js?v=2"></script>
+    <script src="/js/app.js?v=9"></script>
 </body>
 </html>

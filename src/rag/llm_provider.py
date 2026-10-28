@@ -85,7 +85,7 @@ def _get_groq_llm(model: ModelConfig) -> BaseChatModel:
         api_key=settings.groq_api_key,
         temperature=model.temperature,
         max_tokens=model.max_tokens,
-        model_kwargs={"reasoning_format": "hidden"},
+        reasoning_format="hidden",
     )
 
 

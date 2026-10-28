@@ -236,3 +236,11 @@ results/plots/*
 # Qdrant & Ollama local data
 qdrant_data/
 ollama_data/
+
+# Scratch test files (not part of the test suite)
+test_groq.py
+test_init.py
+
+# Antigravity / AI agent
+.agents/
+.opencode/

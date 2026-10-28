@@ -7,10 +7,8 @@ This ties everything together:
   3. Chunks are formatted into context
   4. LLM generates an answer based on the context
 
-This is what makes it "Retrieval-Augmented Generation":
-  - Retrieval: finding relevant documents (Retriever)
-  - Augmented: adding them to the prompt (context)
-  - Generation: LLM writes the answer
+Supports configurable RAG strategies (chunk sizes, reranking)
+and multiple datasets.
 """
 
 import logging
@@ -21,6 +19,7 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.config.models import ModelConfig
+from src.config.rag_config import DEFAULT_RAG_CONFIG, RAGConfig
 from src.rag.llm_provider import get_llm
 from src.rag.prompts import get_prompts
 from src.rag.retriever import Retriever
@@ -42,6 +41,11 @@ class RAGResponse:
     generation_time_ms: float = 0.0  # How long LLM generation took
     total_time_ms: float = 0.0  # Total end-to-end time
     top_k: int = 5
+    rag_config: str = ""  # Name of the RAG config used
+    dataset: str = ""  # Name of the dataset used
+    tokens_in: int = 0  # Input tokens (prompt)
+    tokens_out: int = 0  # Output tokens (completion)
+    tokens_per_second: float = 0.0  # Generation speed (tokens_out / gen_time_s)
     metadata: dict = field(default_factory=dict)
 
 
@@ -50,7 +54,12 @@ class RAGPipeline:
     Main RAG pipeline — ask questions, get answers.
 
     Usage:
-        pipeline = RAGPipeline(model_config=LLAMA_3_1_8B, embeddings=embeddings)
+        pipeline = RAGPipeline(
+            model_config=LLAMA_3_1_8B,
+            embeddings=embeddings,
+            rag_config=BASIC_512,
+            dataset="wiki",
+        )
         response = pipeline.ask("What is the capital of France?")
         print(response.answer)
     """
@@ -60,16 +69,23 @@ class RAGPipeline:
         model_config: ModelConfig,
         embeddings: Embeddings,
         language: str = "en",
+        rag_config: RAGConfig = DEFAULT_RAG_CONFIG,
+        dataset: str = "wiki",
     ):
         self.model_config = model_config
         self.language = language
+        self.rag_config = rag_config
+        self.dataset = dataset
 
         # Initialize components
         self.llm = get_llm(model_config)
-        self.retriever = Retriever(embeddings)
+        self.retriever = Retriever(embeddings, dataset=dataset, rag_config=rag_config)
         self.system_prompt, self.user_prompt_template = get_prompts(language)
 
-        logger.info(f"RAG Pipeline ready: model={model_config.name}, lang={language}")
+        logger.info(
+            f"RAG Pipeline ready: model={model_config.name}, "
+            f"lang={language}, rag={rag_config.name}, dataset={dataset}"
+        )
 
     def ask(
         self,
@@ -117,21 +133,66 @@ class RAGPipeline:
             HumanMessage(content=user_prompt),
         ]
 
-        response = self.llm.invoke(messages)
+        # Retry with backoff for rate limits (429)
+        max_retries = 3
+        response = None
+        for attempt in range(max_retries + 1):
+            try:
+                response = self.llm.invoke(messages)
+                break
+            except Exception as exc:
+                exc_str = str(exc)
+                is_rate_limit = (
+                    "429" in exc_str or "rate" in exc_str.lower() or "Rate limit" in exc_str
+                )
+                if is_rate_limit and attempt < max_retries:
+                    wait = 2 ** (attempt + 1)
+                    logger.warning(
+                        f"Rate limited (attempt {attempt + 1}/"
+                        f"{max_retries}), retrying in {wait}s..."
+                    )
+                    time.sleep(wait)
+                else:
+                    raise
+
         generation_time = (time.perf_counter() - generation_start) * 1000
 
         total_time = (time.perf_counter() - total_start) * 1000
 
+        # ---- Extract token usage ----
+        tokens_in = 0
+        tokens_out = 0
+        tokens_per_second = 0.0
+
+        # LangChain provides usage_metadata on AIMessage
+        usage = getattr(response, "usage_metadata", None)
+        if usage:
+            tokens_in = usage.get("input_tokens", 0) or 0
+            tokens_out = usage.get("output_tokens", 0) or 0
+
+        # Fallback: try response_metadata (some providers put it there)
+        if not tokens_out:
+            resp_meta = getattr(response, "response_metadata", {})
+            if "token_usage" in resp_meta:
+                tokens_in = resp_meta["token_usage"].get("prompt_tokens", 0)
+                tokens_out = resp_meta["token_usage"].get("completion_tokens", 0)
+
+        # Calculate generation speed
+        if tokens_out and generation_time > 0:
+            tokens_per_second = round(tokens_out / (generation_time / 1000), 1)
+
         # ---- Build response ----
         answer = response.content if hasattr(response, "content") else str(response)
 
-        # Strip chain-of-thought from models that include it (Qwen, DeepSeek, etc.)
-        # Case 1: <think>...</think> present → take everything AFTER last </think>
-        # Case 2: <think>... (truncated, no closing tag) → discard thinking entirely
+        # Strip chain-of-thought from models that include it
         if "</think>" in answer:
             answer = answer.split("</think>")[-1].strip()
         elif "<think>" in answer:
             answer = answer.split("<think>")[0].strip()
+
+        # Fallback if answer is empty
+        if not answer:
+            answer = "I don't have enough information to answer this question."
 
         rag_response = RAGResponse(
             answer=answer,
@@ -144,6 +205,11 @@ class RAGPipeline:
             generation_time_ms=round(generation_time, 1),
             total_time_ms=round(total_time, 1),
             top_k=top_k,
+            rag_config=self.rag_config.name,
+            dataset=self.dataset,
+            tokens_in=tokens_in,
+            tokens_out=tokens_out,
+            tokens_per_second=tokens_per_second,
         )
 
         logger.info(
@@ -151,7 +217,8 @@ class RAGPipeline:
             f"Q: '{question[:60]}...' → "
             f"retrieval={retrieval_time:.0f}ms, "
             f"generation={generation_time:.0f}ms, "
-            f"total={total_time:.0f}ms"
+            f"total={total_time:.0f}ms, "
+            f"tokens={tokens_in}→{tokens_out} ({tokens_per_second} tok/s)"
         )
 
         return rag_response
@@ -161,6 +228,8 @@ def create_pipeline(
     model_config: ModelConfig,
     embeddings: Embeddings | None = None,
     language: str = "en",
+    rag_config: RAGConfig = DEFAULT_RAG_CONFIG,
+    dataset: str = "wiki",
 ) -> RAGPipeline:
     """
     Convenience function to create a RAG pipeline.
@@ -176,6 +245,8 @@ def create_pipeline(
         model_config=model_config,
         embeddings=embeddings,
         language=language,
+        rag_config=rag_config,
+        dataset=dataset,
     )
 
 
