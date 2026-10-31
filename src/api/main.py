@@ -8,6 +8,7 @@ Endpoints:
   GET  /                    → Frontend UI
   POST /api/query           → Ask a question to the RAG system
   GET  /api/models          → List available models
+  GET  /api/datasets        → List ingested knowledge bases
   GET  /api/test-sets       → List benchmark question sets
   GET  /api/rag-configs     → List RAG configurations
   POST /api/report          → Generate a PDF report
@@ -22,6 +23,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from src.api.routes.datasets import router as datasets_router
 from src.api.routes.models import router as models_router
 from src.api.routes.query import router as query_router
 from src.api.routes.rag_configs import router as rag_configs_router
@@ -64,14 +66,22 @@ app.add_middleware(
 # --- API Routes ---
 app.include_router(query_router, prefix="/api")
 app.include_router(models_router, prefix="/api")
+app.include_router(datasets_router, prefix="/api")
 app.include_router(test_sets_router, prefix="/api")
 app.include_router(rag_configs_router, prefix="/api")
 app.include_router(report_router, prefix="/api")
 
 
 @app.get("/api/health")
+@app.get("/health")
 async def health_check():
-    """Health check endpoint."""
+    """
+    Health check endpoint.
+
+    ``/health`` is a plain alias for ``/api/health`` so that containers,
+    reverse proxies and uptime monitors that probe the conventional root
+    path do not generate misleading 404s.
+    """
     return {"status": "ok", "service": "rag-analytics"}
 
 

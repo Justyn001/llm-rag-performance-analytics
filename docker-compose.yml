@@ -31,7 +31,10 @@ services:
       - QDRANT__SERVICE__GRPC_PORT=6334
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
+      # The Qdrant image does not ship curl/wget.  A TCP check via bash is
+      # enough here: the container is healthy when the REST port accepts
+      # connections.  Using the API path would require installing a client.
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333'"]
       interval: 10s
       timeout: 5s
       retries: 3

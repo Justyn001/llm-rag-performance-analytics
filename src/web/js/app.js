@@ -53,9 +53,10 @@ const reportBar = document.getElementById('report-bar');
 const downloadReportBtn = document.getElementById('download-report-btn');
 
 // --- Init ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     loadModels();
-    loadTestSets();
+    await loadDatasets();
+    await loadTestSets();
     loadRagConfigs();
     setupControls();
 });
@@ -95,24 +96,73 @@ async function loadRagConfigs() {
     }
 }
 
+// ===== DATASETS =====
+
+async function loadDatasets() {
+    try {
+        const resp = await fetch(`${API}/api/datasets`);
+        const data = await resp.json();
+        const datasets = data.datasets;
+        datasetSelect.innerHTML = '';
+
+        datasets.forEach(ds => {
+            const opt = document.createElement('option');
+            opt.value = ds.name;
+            opt.textContent = `${ds.display_name} (${ds.chunk_sizes.join('/')})`;
+            datasetSelect.appendChild(opt);
+        });
+
+        if (datasets.some(ds => ds.name === selectedDataset)) {
+            datasetSelect.value = selectedDataset;
+        } else if (datasets.length) {
+            selectedDataset = datasets[0].name;
+            datasetSelect.value = selectedDataset;
+        } else {
+            selectedDataset = '';
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'No ingested datasets';
+            datasetSelect.appendChild(opt);
+        }
+    } catch (err) {
+        console.error('Failed to load datasets:', err);
+        selectedDataset = '';
+        datasetSelect.innerHTML = '<option value="">No datasets</option>';
+    }
+}
+
 // ===== TEST SETS =====
 
 async function loadTestSets() {
     try {
         const resp = await fetch(`${API}/api/test-sets`);
         const data = await resp.json();
-        const sets = data.test_sets;
+
+        // A benchmark is only meaningful for its own corpus.  Show the sets
+        // that match the dataset selected in the topbar.
+        const sets = selectedDataset
+            ? data.test_sets.filter(ts => ts.dataset === selectedDataset)
+            : [];
+
         testSetSelect.innerHTML = '';
-        sets.forEach(ts => {
+        if (sets.length === 0) {
             const opt = document.createElement('option');
-            opt.value = ts.name;
-            opt.textContent = `${ts.display_name} (${ts.total_available})`;
+            opt.value = '';
+            opt.textContent = 'No benchmark for this dataset';
             testSetSelect.appendChild(opt);
-        });
+        } else {
+            sets.forEach(ts => {
+                const opt = document.createElement('option');
+                opt.value = ts.name;
+                opt.textContent = `${ts.display_name} (${ts.total_available})`;
+                testSetSelect.appendChild(opt);
+            });
+        }
         autotestBtn.disabled = sets.length === 0;
     } catch (err) {
         console.error('Failed to load test sets:', err);
         testSetSelect.innerHTML = '<option value="">No tests</option>';
+        autotestBtn.disabled = true;
     }
 }
 
@@ -543,8 +593,9 @@ function setupControls() {
     });
 
     // Dataset
-    datasetSelect.addEventListener('change', () => {
+    datasetSelect.addEventListener('change', async () => {
         selectedDataset = datasetSelect.value;
+        await loadTestSets();
     });
 
     queryForm.addEventListener('submit', (e) => {

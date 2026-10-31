@@ -29,9 +29,9 @@ from src.config.settings import get_settings
 from src.data.chunker import ChunkingStrategy, chunk_documents
 from src.data.embeddings import EmbeddingProvider, get_embedding_model
 from src.data.loader import (
-    load_natural_questions,
+    load_squad_validation_documents,
+    load_trivia_validation_documents,
     load_wikipedia_contexts,
-    save_qa_pairs,
 )
 
 logger = logging.getLogger(__name__)
@@ -120,11 +120,18 @@ def ingest_dataset(
     return stats
 
 
-def _load_documents(dataset: str, n_articles: int, n_qa_pairs: int) -> list:
-    """Load documents for the given dataset."""
+def _load_documents(dataset: str, n_articles: int, _n_qa_pairs: int) -> list:
+    """
+    Load documents for the given dataset.
+
+    ``n_articles`` is the corpus slice size.  The benchmark builders use the
+    same default slice, so a benchmark question's gold document is always in
+    the collection created here.
+    """
     if dataset == "wiki":
-        qa_pairs, _ = load_natural_questions(subset_size=n_qa_pairs)
-        save_qa_pairs(qa_pairs)
+        # The wiki KB is Simple English Wikipedia.  Do not save nq_open QA
+        # pairs here: they are unrelated to this corpus and would look like a
+        # benchmark even though their answers are not in the KB.
         return load_wikipedia_contexts(subset_size=n_articles)
 
     if dataset == "squad":
@@ -138,76 +145,15 @@ def _load_documents(dataset: str, n_articles: int, n_qa_pairs: int) -> list:
 
 
 def _load_squad_documents(n_articles: int) -> list:
-    """Load SQuAD 2.0 contexts from HuggingFace."""
-    from src.data.loader import Document
-
-    try:
-        from datasets import load_dataset
-
-        ds = load_dataset("rajpurkar/squad_v2", split="train", trust_remote_code=True)
-    except Exception as e:
-        logger.error(f"Failed to load SQuAD dataset: {e}")
-        return []
-
-    # Extract unique contexts (SQuAD has many questions per context)
-    seen = set()
-    documents = []
-    for item in ds:
-        ctx = item["context"]
-        title = item["title"]
-        key = ctx[:100]
-        if key not in seen and len(ctx) > 100:
-            seen.add(key)
-            documents.append(
-                Document(
-                    content=ctx,
-                    title=title,
-                    source="squad_v2",
-                    language="en",
-                )
-            )
-            if len(documents) >= n_articles:
-                break
-
+    """Load official SQuAD 2.0 validation contexts for the corpus slice."""
+    documents = load_squad_validation_documents(max_contexts=n_articles)
     print(f"   ✓ Loaded {len(documents)} SQuAD contexts")
     return documents
 
 
 def _load_trivia_documents(n_articles: int) -> list:
-    """Load TriviaQA evidence documents from HuggingFace."""
-    from src.data.loader import Document
-
-    try:
-        from datasets import load_dataset
-
-        ds = load_dataset("trivia_qa", "rc", split="train", trust_remote_code=True)
-    except Exception as e:
-        logger.error(f"Failed to load TriviaQA dataset: {e}")
-        return []
-
-    # Extract unique search results / evidence documents
-    seen = set()
-    documents = []
-    for item in ds:
-        for ctx in item.get("search_results", {}).get("search_context", []):
-            if not ctx or len(ctx) < 100:
-                continue
-            key = ctx[:100]
-            if key not in seen:
-                seen.add(key)
-                documents.append(
-                    Document(
-                        content=ctx,
-                        title=item.get("question", "TriviaQA"),
-                        source="trivia_qa",
-                        language="en",
-                    )
-                )
-                if len(documents) >= n_articles:
-                    break
-        if len(documents) >= n_articles:
-            break
-
+    """Load official TriviaQA rc.wikipedia validation evidence documents."""
+    documents = load_trivia_validation_documents(max_contexts=n_articles)
     print(f"   ✓ Loaded {len(documents)} TriviaQA contexts")
     return documents
 

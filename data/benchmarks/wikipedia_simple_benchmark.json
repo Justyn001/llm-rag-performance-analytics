@@ -1,0 +1,662 @@
+[
+  {
+    "question_id": "wiki-001",
+    "question": "What is the population of Cuba?",
+    "answerable": true,
+    "expected_answer": "13 million",
+    "gold_context": "The provinces are divided into municipalities. The population of Cuba is close to 13 million. The people of Cuba come from three different groups.",
+    "gold_span": "13 million",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Cuba'",
+    "gold_title": "Cuba",
+    "gold_url": "https://simple.wikipedia.org/wiki/Cuba",
+    "answer_aliases": [
+      "13 million"
+    ]
+  },
+  {
+    "question_id": "wiki-002",
+    "question": "Where is Las Vegas located?",
+    "answerable": true,
+    "expected_answer": "Nevada",
+    "gold_context": "Las Vegas is a city in the American state of Nevada. There were 641,903 people living in the city in 2020, and more than 2,000,000 people living in the metropolitan area.",
+    "gold_span": "Nevada",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Las Vegas'",
+    "gold_title": "Las Vegas",
+    "gold_url": "https://simple.wikipedia.org/wiki/Las%20Vegas",
+    "answer_aliases": [
+      "Nevada"
+    ]
+  },
+  {
+    "question_id": "wiki-003",
+    "question": "Who invented calculus?",
+    "answerable": true,
+    "expected_answer": "Isaac Newton",
+    "gold_context": "Calculus is used in many different sciences such as physics, astronomy, biology, engineering, economics, medicine and sociology. In the 1670s and 1680s, Sir Isaac Newton in England and Gottfried Leibniz in Germany figured out calculus at the same time, working separately from each other. Newton wanted to have a new way to predict where to see planets in the sky, because astronomy had always been a popular and useful form of science, and knowing more about the motions of the objects in the night sky was important for navigation of ships.",
+    "gold_span": "Isaac Newton",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Calculus'",
+    "gold_title": "Calculus",
+    "gold_url": "https://simple.wikipedia.org/wiki/Calculus",
+    "answer_aliases": [
+      "Isaac Newton"
+    ]
+  },
+  {
+    "question_id": "wiki-004",
+    "question": "The Vatican City is the headquarters of which organization?",
+    "answerable": true,
+    "expected_answer": "Roman Catholic Church",
+    "gold_context": "The Vatican City is a city-state, because all its territory is urban and built-up. The Vatican City is the headquarters of the Roman Catholic Church and its government, the Holy See. Its head of state is the Pope which is, religiously speaking, the Bishop of Rome and head of the Roman Catholic Church.",
+    "gold_span": "Roman Catholic Church",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Vatican City'",
+    "gold_title": "Vatican City",
+    "gold_url": "https://simple.wikipedia.org/wiki/Vatican%20City",
+    "answer_aliases": [
+      "Roman Catholic Church"
+    ]
+  },
+  {
+    "question_id": "wiki-005",
+    "question": "What is Belgium famous for?",
+    "answerable": true,
+    "expected_answer": "beer, chocolate, waffles and french fries",
+    "gold_context": "Successful films include Man Bites Dog and The Alzheimer Affair''.\n\nCuisine Belgium is famous for beer, chocolate, waffles and french fries. French fries were first made in Belgium.",
+    "gold_span": "beer, chocolate, waffles and french fries",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Belgium'",
+    "gold_title": "Belgium",
+    "gold_url": "https://simple.wikipedia.org/wiki/Belgium",
+    "answer_aliases": [
+      "beer, chocolate, waffles and french fries"
+    ]
+  },
+  {
+    "question_id": "wiki-006",
+    "question": "What do people call the side of a coin with the face?",
+    "answerable": true,
+    "expected_answer": "heads",
+    "gold_context": "Many coins have a picture of the face of a famous person on one side, and something else on the other side. Often people call the side with the face \"heads\", and the other side \"tails\".\n\nThe probability (p) of an event E, written , is always between zero (impossible) and one (certain).",
+    "gold_span": "heads",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Probability'",
+    "gold_title": "Probability",
+    "gold_url": "https://simple.wikipedia.org/wiki/Probability",
+    "answer_aliases": [
+      "heads"
+    ]
+  },
+  {
+    "question_id": "wiki-007",
+    "question": "How long is a year?",
+    "answerable": true,
+    "expected_answer": "365 days",
+    "gold_context": "A year is about 365 days (except in a leap year). It is the time it takes the Earth to go completely around (orbit) the sun once.",
+    "gold_span": "365 days",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Year'",
+    "gold_title": "Year",
+    "gold_url": "https://simple.wikipedia.org/wiki/Year",
+    "answer_aliases": [
+      "365 days"
+    ]
+  },
+  {
+    "question_id": "wiki-008",
+    "question": "What do transmission electron microscopes fire into the object being looked at?",
+    "answerable": true,
+    "expected_answer": "cathode rays",
+    "gold_context": "The second most common kind are a few kinds of electron microscopes. Transmission electron microscopes (TEMs) fire cathode rays into the object being looked at. This carries information about how the object looks into a magnetic \"lens\".",
+    "gold_span": "cathode rays",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Microscope'",
+    "gold_title": "Microscope",
+    "gold_url": "https://simple.wikipedia.org/wiki/Microscope",
+    "answer_aliases": [
+      "cathode rays"
+    ]
+  },
+  {
+    "question_id": "wiki-009",
+    "question": "What is art?",
+    "answerable": true,
+    "expected_answer": "creative activity",
+    "gold_context": "Art is a creative activity. It produces a product, an object.",
+    "gold_span": "creative activity",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Art'",
+    "gold_title": "Art",
+    "gold_url": "https://simple.wikipedia.org/wiki/Art",
+    "answer_aliases": [
+      "creative activity"
+    ]
+  },
+  {
+    "question_id": "wiki-010",
+    "question": "Where were ancient Greek plays performed?",
+    "answerable": true,
+    "expected_answer": "amphitheatres",
+    "gold_context": "Some of their plays survived, and are still performed today. These ancient Greek plays were performed outdoors in large amphitheatres, so that many people could see them. There were contests among the playwrights (people who write plays are called playwrights) and the winner would get a prize.",
+    "gold_span": "amphitheatres",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Theatre'",
+    "gold_title": "Theatre",
+    "gold_url": "https://simple.wikipedia.org/wiki/Theatre",
+    "answer_aliases": [
+      "amphitheatres"
+    ]
+  },
+  {
+    "question_id": "wiki-011",
+    "question": "What can words differ in, in a tone language?",
+    "answerable": true,
+    "expected_answer": "tones",
+    "gold_context": "A tone language, or tonal language, is a language in which words can differ in tones (like pitches in music) in addition to consonants and vowels.\n\nMany languages, including Mandarin, Vietnamese, Thai, Meitei, Lao, Hmong, Cantonese, Punjabi, Chittagonian, Yorùbá, Igbo, Luganda, Ewe,  Lingála, Cilubà and Cherokee are tonal.",
+    "gold_span": "tones",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Tone language'",
+    "gold_title": "Tone language",
+    "gold_url": "https://simple.wikipedia.org/wiki/Tone%20language",
+    "answer_aliases": [
+      "tones"
+    ]
+  },
+  {
+    "question_id": "wiki-012",
+    "question": "How many measurements are within two standard deviations of the average?",
+    "answerable": true,
+    "expected_answer": "95 of every 100 measurements",
+    "gold_context": "If the data follows this pattern (we would say the data is normally distributed), about 68 of every 100 pieces of data will be off the average by less than the standard deviation . Not only that, but about 95 of every 100 measurements will be off the average by less than two times the standard deviation, and about 997 in 1000 will be closer to the average by less than three standard deviations. Other descriptive statistics \nWe also can use statistics to find out that some percent, percentile, number, or fraction of people or things in a group do something or fit in a certain category.",
+    "gold_span": "95 of every 100 measurements",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Statistics'",
+    "gold_title": "Statistics",
+    "gold_url": "https://simple.wikipedia.org/wiki/Statistics",
+    "answer_aliases": [
+      "95 of every 100 measurements"
+    ]
+  },
+  {
+    "question_id": "wiki-013",
+    "question": "When does the history of anatomy date back to?",
+    "answerable": true,
+    "expected_answer": "1600 BC",
+    "gold_context": "A person who studies anatomy is an anatomist. The history of anatomy dates back to 1600 BC when Egyptians began studying human anatomy. They discovered the functions of many organs like the liver, spleen, kidneys, heart etc.",
+    "gold_span": "1600 BC",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Anatomy'",
+    "gold_title": "Anatomy",
+    "gold_url": "https://simple.wikipedia.org/wiki/Anatomy",
+    "answer_aliases": [
+      "1600 BC"
+    ]
+  },
+  {
+    "question_id": "wiki-014",
+    "question": "What is a metre?",
+    "answerable": true,
+    "expected_answer": "basic unit of length in the SI measurement system",
+    "gold_context": "A metre (US spelling, meter) is the basic unit of length in the SI measurement system. The symbol for the metre is m.",
+    "gold_span": "basic unit of length in the SI measurement system",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Metre'",
+    "gold_title": "Metre",
+    "gold_url": "https://simple.wikipedia.org/wiki/Metre",
+    "answer_aliases": [
+      "basic unit of length in the SI measurement system"
+    ]
+  },
+  {
+    "question_id": "wiki-015",
+    "question": "How many members are elected to the Parliament of Finland?",
+    "answerable": true,
+    "expected_answer": "200 members",
+    "gold_context": "Number five was Kesko which sells everyday goods in K-supermarkets. Elections are organized to select 200 members to the Parliament of Finland. Also selected are the president of Finland, members of town and city councils and Finnish members to the European Parliament.",
+    "gold_span": "200 members",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Finland'",
+    "gold_title": "Finland",
+    "gold_url": "https://simple.wikipedia.org/wiki/Finland",
+    "answer_aliases": [
+      "200 members"
+    ]
+  },
+  {
+    "question_id": "wiki-016",
+    "question": "What climates are different apple variants available for?",
+    "answerable": true,
+    "expected_answer": "temperate and subtropical climates",
+    "gold_context": "There are more than 7,500 known variants of apples. Different variants are available for temperate and subtropical climates. One large collection of over 2,100 apple variants is at the National Fruit Collection in England.",
+    "gold_span": "temperate and subtropical climates",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Apple'",
+    "gold_title": "Apple",
+    "gold_url": "https://simple.wikipedia.org/wiki/Apple",
+    "answer_aliases": [
+      "temperate and subtropical climates"
+    ]
+  },
+  {
+    "question_id": "wiki-017",
+    "question": "What are popular applications on Microsoft Windows?",
+    "answerable": true,
+    "expected_answer": "word processors",
+    "gold_context": "Windows has several kinds of applications/programs available. Popular applications include games, word processors (to write words) or additional programs like Adobe Flash Player (to watch some videos and play many games on internet sites). Adding new applications to Windows is called \"installing\".",
+    "gold_span": "word processors",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Microsoft Windows'",
+    "gold_title": "Microsoft Windows",
+    "gold_url": "https://simple.wikipedia.org/wiki/Microsoft%20Windows",
+    "answer_aliases": [
+      "word processors"
+    ]
+  },
+  {
+    "question_id": "wiki-018",
+    "question": "What forms a service economy?",
+    "answerable": true,
+    "expected_answer": "service trades",
+    "gold_context": "A service is a job or work done for someone else. All the service trades form a service economy. \n\nGood examples are:\nGovernment is perhaps the largest example.",
+    "gold_span": "service trades",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Service economy'",
+    "gold_title": "Service economy",
+    "gold_url": "https://simple.wikipedia.org/wiki/Service%20economy",
+    "answer_aliases": [
+      "service trades"
+    ]
+  },
+  {
+    "question_id": "wiki-019",
+    "question": "Which planet is the largest in the Solar System?",
+    "answerable": true,
+    "expected_answer": "largest planet in the Solar System",
+    "gold_context": "Jupiter is the largest planet in the Solar System. It is the fifth planet from the Sun.",
+    "gold_span": "largest planet in the Solar System",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Jupiter'",
+    "gold_title": "Jupiter",
+    "gold_url": "https://simple.wikipedia.org/wiki/Jupiter",
+    "answer_aliases": [
+      "largest planet in the Solar System"
+    ]
+  },
+  {
+    "question_id": "wiki-020",
+    "question": "Why does Mars appear red?",
+    "answerable": true,
+    "expected_answer": "red color",
+    "gold_context": "It has the largest volcano in the Solar System, and some very large impact craters. Mars is named after the mythological Roman god of war because it appears of red color.\n\nSpace probes such as the Viking program landers are the main tools for the exploration of Mars.",
+    "gold_span": "red color",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Mars'",
+    "gold_title": "Mars",
+    "gold_url": "https://simple.wikipedia.org/wiki/Mars",
+    "answer_aliases": [
+      "red color"
+    ]
+  },
+  {
+    "question_id": "wiki-021",
+    "question": "Which planet is known for its rings?",
+    "answerable": true,
+    "expected_answer": "rings",
+    "gold_context": "The largest moon is a moon of Jupiter, Ganymede. There are also many rings around Saturn. These rings are made of ice with some rocks and dust.",
+    "gold_span": "rings",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Saturn'",
+    "gold_title": "Saturn",
+    "gold_url": "https://simple.wikipedia.org/wiki/Saturn",
+    "answer_aliases": [
+      "rings"
+    ]
+  },
+  {
+    "question_id": "wiki-022",
+    "question": "Which planet is the eighth and farthest from the Sun?",
+    "answerable": true,
+    "expected_answer": "eighth and farthest planet from the Sun",
+    "gold_context": "Neptune is the eighth and farthest planet from the Sun in the Solar System. It is an ice giant.",
+    "gold_span": "eighth and farthest planet from the Sun",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Neptune'",
+    "gold_title": "Neptune",
+    "gold_url": "https://simple.wikipedia.org/wiki/Neptune",
+    "answer_aliases": [
+      "eighth and farthest planet from the Sun"
+    ]
+  },
+  {
+    "question_id": "wiki-023",
+    "question": "Which planet is the smallest in the Solar System?",
+    "answerable": true,
+    "expected_answer": "smallest planet in the Solar System",
+    "gold_context": "Mercury is the smallest planet in the Solar System.  It is the closest planet to the sun.",
+    "gold_span": "smallest planet in the Solar System",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Mercury (planet)'",
+    "gold_title": "Mercury (planet)",
+    "gold_url": "https://simple.wikipedia.org/wiki/Mercury%20%28planet%29",
+    "answer_aliases": [
+      "smallest planet in the Solar System"
+    ]
+  },
+  {
+    "question_id": "wiki-024",
+    "question": "What is the Milky Way?",
+    "answerable": true,
+    "expected_answer": "our home galaxy",
+    "gold_context": "The Milky Way is our home galaxy. It contains around 400 billion stars, including our Sun.",
+    "gold_span": "our home galaxy",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Milky Way'",
+    "gold_title": "Milky Way",
+    "gold_url": "https://simple.wikipedia.org/wiki/Milky%20Way",
+    "answer_aliases": [
+      "our home galaxy"
+    ]
+  },
+  {
+    "question_id": "wiki-025",
+    "question": "What is Antarctica?",
+    "answerable": true,
+    "expected_answer": "Earth's southernmost continent",
+    "gold_context": "Antarctica is the Earth's southernmost continent. It is on the South Pole.",
+    "gold_span": "Earth's southernmost continent",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Antarctica'",
+    "gold_title": "Antarctica",
+    "gold_url": "https://simple.wikipedia.org/wiki/Antarctica",
+    "answer_aliases": [
+      "Earth's southernmost continent"
+    ]
+  },
+  {
+    "question_id": "wiki-026",
+    "question": "Where is the Pacific Ocean?",
+    "answerable": true,
+    "expected_answer": "body of water between Asia and Australia",
+    "gold_context": "The Pacific Ocean is the body of water between Asia and Australia in the west, the Americas in the east, the Southern Ocean to the south, and the Arctic Ocean to the north. It is the largest named ocean and it covers one-third of the surface of the entire world.",
+    "gold_span": "body of water between Asia and Australia",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Pacific Ocean'",
+    "gold_title": "Pacific Ocean",
+    "gold_url": "https://simple.wikipedia.org/wiki/Pacific%20Ocean",
+    "answer_aliases": [
+      "body of water between Asia and Australia"
+    ]
+  },
+  {
+    "question_id": "wiki-027",
+    "question": "What is the Arctic Ocean?",
+    "answerable": true,
+    "expected_answer": "ocean around the North Pole",
+    "gold_context": "The Arctic Ocean is the ocean around the North Pole. The most northern parts of Eurasia and North America are around the Arctic Ocean.",
+    "gold_span": "ocean around the North Pole",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Arctic Ocean'",
+    "gold_title": "Arctic Ocean",
+    "gold_url": "https://simple.wikipedia.org/wiki/Arctic%20Ocean",
+    "answer_aliases": [
+      "ocean around the North Pole"
+    ]
+  },
+  {
+    "question_id": "wiki-028",
+    "question": "What is the capital of Australia?",
+    "answerable": true,
+    "expected_answer": "Canberra",
+    "gold_context": "Australia (officially called the Commonwealth of Australia) is a country and sovereign state in the southern hemisphere, located in Oceania. Its capital city is Canberra, and its largest city is Sydney. Australia is the sixth biggest country in the world by land area, and is part of the Oceanic and Australasian regions.",
+    "gold_span": "Canberra",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Australia'",
+    "gold_title": "Australia",
+    "gold_url": "https://simple.wikipedia.org/wiki/Australia",
+    "answer_aliases": [
+      "Canberra"
+    ]
+  },
+  {
+    "question_id": "wiki-029",
+    "question": "What is the capital of Brazil?",
+    "answerable": true,
+    "expected_answer": "Brasília",
+    "gold_context": "The country has about 212 million people. The capital of Brazil is Brasília. Brazil was named after brazilwood, which is a tree that once grew very well along the Brazilian coast.",
+    "gold_span": "Brasília",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Brazil'",
+    "gold_title": "Brazil",
+    "gold_url": "https://simple.wikipedia.org/wiki/Brazil",
+    "answer_aliases": [
+      "Brasília"
+    ]
+  },
+  {
+    "question_id": "wiki-030",
+    "question": "What is the largest city in Quebec?",
+    "answerable": true,
+    "expected_answer": "largest city in the province of Quebec",
+    "gold_context": "Montreal (, spelled Montréal in French) is a city in the country of Canada. It is the largest city in the province of Quebec and the second-largest city in Canada. It is the second-largest French-speaking city in the world after Paris.",
+    "gold_span": "largest city in the province of Quebec",
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom question grounded in Simple Wikipedia article 'Montreal'",
+    "gold_title": "Montreal",
+    "gold_url": "https://simple.wikipedia.org/wiki/Montreal",
+    "answer_aliases": [
+      "largest city in the province of Quebec"
+    ]
+  },
+  {
+    "question_id": "wiki-control-001",
+    "question": "Who is the current king of France?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "wiki-control-002",
+    "question": "What is the latest iPhone model?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "wiki-control-003",
+    "question": "What are the rules of Quidditch?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "wiki-control-004",
+    "question": "Who won the 2024 US presidential election?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "wiki-control-005",
+    "question": "What is the recipe for tiramisu?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "wiki-control-006",
+    "question": "How do you program in Rust?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "wiki-control-007",
+    "question": "What is the plot of the movie Inception?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "wiki-control-008",
+    "question": "What is the capital of Wakanda?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "wiki-control-009",
+    "question": "How many followers does Elon Musk have on Twitter?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "wiki-control-010",
+    "question": "What is the best cryptocurrency to invest in?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "wiki",
+    "split": "custom",
+    "set_type": "custom",
+    "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  }
+]

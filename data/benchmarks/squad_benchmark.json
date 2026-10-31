@@ -1,52 +1,858 @@
 [
-    {"question": "What is the largest city in Europe by population?", "expected_answer": "Istanbul or Moscow depending on definition", "source": "SQuAD — Geography", "answerable": true},
-    {"question": "What is the role of mitochondria in cells?", "expected_answer": "Powerhouse of the cell, produces ATP", "source": "SQuAD — Biology", "answerable": true},
-    {"question": "Who was the first president of the United States?", "expected_answer": "George Washington", "source": "SQuAD — History", "answerable": true},
-    {"question": "What causes earthquakes?", "expected_answer": "Movement of tectonic plates", "source": "SQuAD — Geology", "answerable": true},
-    {"question": "What is the theory of evolution?", "expected_answer": "Natural selection drives species adaptation over time", "source": "SQuAD — Biology", "answerable": true},
-    {"question": "What is Newton's first law of motion?", "expected_answer": "An object at rest stays at rest unless acted upon by a force", "source": "SQuAD — Physics", "answerable": true},
-    {"question": "What was the Renaissance?", "expected_answer": "Cultural movement in Europe from 14th to 17th century", "source": "SQuAD — History", "answerable": true},
-    {"question": "How does the immune system work?", "expected_answer": "Defends body against pathogens using white blood cells", "source": "SQuAD — Biology", "answerable": true},
-    {"question": "What is the water cycle?", "expected_answer": "Evaporation, condensation, precipitation cycle", "source": "SQuAD — Geography", "answerable": true},
-    {"question": "Who wrote the Declaration of Independence?", "expected_answer": "Thomas Jefferson", "source": "SQuAD — History", "answerable": true},
-    {"question": "What is DNA?", "expected_answer": "Deoxyribonucleic acid, carries genetic information", "source": "SQuAD — Biology", "answerable": true},
-    {"question": "What caused World War I?", "expected_answer": "Assassination of Archduke Franz Ferdinand and alliances", "source": "SQuAD — History", "answerable": true},
-    {"question": "How does photosynthesis work in detail?", "expected_answer": "Light-dependent and light-independent reactions convert CO2 and water to glucose", "source": "SQuAD — Biology", "answerable": true},
-    {"question": "What is the greenhouse effect?", "expected_answer": "Gases trap heat in atmosphere, warming Earth", "source": "SQuAD — Climate", "answerable": true},
-    {"question": "What is the speed of light?", "expected_answer": "Approximately 299,792,458 meters per second", "source": "SQuAD — Physics", "answerable": true},
-    {"question": "What is a black hole?", "expected_answer": "Region of spacetime where gravity is so strong nothing can escape", "source": "SQuAD — Astronomy", "answerable": true},
-    {"question": "What is the difference between weather and climate?", "expected_answer": "Weather is short-term, climate is long-term average", "source": "SQuAD — Geography", "answerable": true},
-    {"question": "How do vaccines work?", "expected_answer": "Stimulate immune system to recognize and fight pathogens", "source": "SQuAD — Medicine", "answerable": true},
-    {"question": "What was the Industrial Revolution?", "expected_answer": "Transition from agrarian to industrial economy in 18th-19th century", "source": "SQuAD — History", "answerable": true},
-    {"question": "What is an atom?", "expected_answer": "Smallest unit of matter with protons, neutrons, and electrons", "source": "SQuAD — Chemistry", "answerable": true},
-    {"question": "What are tectonic plates?", "expected_answer": "Large segments of Earth's lithosphere that move and interact", "source": "SQuAD — Geology", "answerable": true},
-    {"question": "What is the solar system?", "expected_answer": "Sun and objects gravitationally bound to it including planets", "source": "SQuAD — Astronomy", "answerable": true},
-    {"question": "How does electricity work?", "expected_answer": "Flow of electrons through a conductor", "source": "SQuAD — Physics", "answerable": true},
-    {"question": "What is democracy?", "expected_answer": "System of government where citizens exercise power by voting", "source": "SQuAD — Political Science", "answerable": true},
-    {"question": "What is the periodic table?", "expected_answer": "Tabular arrangement of chemical elements by atomic number", "source": "SQuAD — Chemistry", "answerable": true},
-    {"question": "What caused the French Revolution?", "expected_answer": "Social inequality, financial crisis, Enlightenment ideas", "source": "SQuAD — History", "answerable": true},
-    {"question": "What is the human digestive system?", "expected_answer": "Organs that break down food into nutrients", "source": "SQuAD — Biology", "answerable": true},
-    {"question": "How does gravity work?", "expected_answer": "Attractive force between objects with mass", "source": "SQuAD — Physics", "answerable": true},
-    {"question": "What is the United Nations?", "expected_answer": "International organization for peace, security, and cooperation", "source": "SQuAD — Politics", "answerable": true},
-    {"question": "What is the ozone layer?", "expected_answer": "Layer of O3 in stratosphere that absorbs UV radiation", "source": "SQuAD — Climate", "answerable": true},
-    {"question": "What is the nervous system?", "expected_answer": "Network of neurons that coordinates body actions", "source": "SQuAD — Biology", "answerable": true},
-    {"question": "What was the Cold War?", "expected_answer": "Geopolitical tension between US and USSR after WWII", "source": "SQuAD — History", "answerable": true},
-    {"question": "What is a volcano?", "expected_answer": "Opening in Earth's crust where magma reaches the surface", "source": "SQuAD — Geology", "answerable": true},
-    {"question": "How does the heart pump blood?", "expected_answer": "Four chambers contract rhythmically to circulate blood", "source": "SQuAD — Biology", "answerable": true},
-    {"question": "What is the electromagnetic spectrum?", "expected_answer": "Range of all electromagnetic radiation frequencies", "source": "SQuAD — Physics", "answerable": true},
-    {"question": "What is capitalism?", "expected_answer": "Economic system based on private ownership and free markets", "source": "SQuAD — Economics", "answerable": true},
-    {"question": "What is the respiratory system?", "expected_answer": "Organs responsible for gas exchange, mainly lungs", "source": "SQuAD — Biology", "answerable": true},
-    {"question": "What is a galaxy?", "expected_answer": "Large system of stars, gas, and dust held together by gravity", "source": "SQuAD — Astronomy", "answerable": true},
-    {"question": "What is the Great Wall of China?", "expected_answer": "Series of fortifications built to protect Chinese states", "source": "SQuAD — History", "answerable": true},
-    {"question": "What is climate change?", "expected_answer": "Long-term shift in global temperatures and weather patterns", "source": "SQuAD — Climate", "answerable": true},
-    {"question": "Who invented the printing press?", "expected_answer": "unanswerable", "source": "Control — may not be in SQuAD KB", "answerable": false},
-    {"question": "What is the best programming language?", "expected_answer": "unanswerable", "source": "Control — opinion", "answerable": false},
-    {"question": "What happened at Area 51?", "expected_answer": "unanswerable", "source": "Control — conspiracy", "answerable": false},
-    {"question": "What is the meaning of life?", "expected_answer": "unanswerable", "source": "Control — philosophical", "answerable": false},
-    {"question": "How to make a nuclear bomb?", "expected_answer": "unanswerable", "source": "Control — dangerous", "answerable": false},
-    {"question": "What will happen in 2050?", "expected_answer": "unanswerable", "source": "Control — future prediction", "answerable": false},
-    {"question": "Who will win the next World Cup?", "expected_answer": "unanswerable", "source": "Control — prediction", "answerable": false},
-    {"question": "What is the color of Wednesday?", "expected_answer": "unanswerable", "source": "Control — nonsensical", "answerable": false},
-    {"question": "How many angels can dance on a pin?", "expected_answer": "unanswerable", "source": "Control — philosophical", "answerable": false},
-    {"question": "What is Pikachu's favorite food?", "expected_answer": "unanswerable", "source": "Control — fictional", "answerable": false}
+  {
+    "question_id": "squad-56de148dcffd8e1900b4b5bd",
+    "question": "When did Dyrrachium fall to the Normans?",
+    "answerable": true,
+    "expected_answer": "1082",
+    "gold_context": "Forced to retreat, Alexius ceded the command to a high Albanian official named Comiscortes in the service of Byzantium. The city's garrison resisted until February 1082, when Dyrrachium was betrayed to the Normans by the Venetian and Amalfitan merchants who had settled there. The Normans were now free to penetrate into the hinterland; they took Ioannina and some minor cities in southwestern Macedonia and Thessaly before appearing at the gates of Thessalonica.",
+    "gold_span": "1082",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Normans",
+    "gold_title": "Normans",
+    "gold_url": null,
+    "answer_aliases": [
+      "1082",
+      "February 1082"
+    ]
+  },
+  {
+    "question_id": "squad-56e16839cd28a01900c6788a",
+    "question": "What unit is measured to determine circuit complexity?",
+    "answerable": true,
+    "expected_answer": "number of gates in a circuit",
+    "gold_context": "The theory formalizes this intuition, by introducing mathematical models of computation to study these problems and quantifying the amount of resources needed to solve them, such as time and storage. Other complexity measures are also used, such as the amount of communication (used in communication complexity), the number of gates in a circuit (used in circuit complexity) and the number of processors (used in parallel computing). One of the roles of computational complexity theory is to determine the practical limits on what computers can and cannot do.",
+    "gold_span": "number of gates in a circuit",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Computational_complexity_theory",
+    "gold_title": "Computational_complexity_theory",
+    "gold_url": null,
+    "answer_aliases": [
+      "number of gates in a circuit",
+      "number of gates"
+    ]
+  },
+  {
+    "question_id": "squad-56e17a7ccd28a01900c679a1",
+    "question": "What is the name given to the input string of a computational problem?",
+    "answerable": true,
+    "expected_answer": "problem instance",
+    "gold_context": "A computational problem can be viewed as an infinite collection of instances together with a solution for every instance. The input string for a computational problem is referred to as a problem instance, and should not be confused with the problem itself. In computational complexity theory, a problem refers to the abstract question to be solved.",
+    "gold_span": "problem instance",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Computational_complexity_theory",
+    "gold_title": "Computational_complexity_theory",
+    "gold_url": null,
+    "answer_aliases": [
+      "problem instance",
+      "a problem instance"
+    ]
+  },
+  {
+    "question_id": "squad-56e190bce3433e1400422fc9",
+    "question": "What are the two simple word responses to a decision problem?",
+    "answerable": true,
+    "expected_answer": "yes or no",
+    "gold_context": "Decision problems are one of the central objects of study in computational complexity theory. A decision problem is a special type of computational problem whose answer is either yes or no, or alternately either 1 or 0. A decision problem can be viewed as a formal language, where the members of the language are instances whose output is yes, and the non-members are those instances whose output is no.",
+    "gold_span": "yes or no",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Computational_complexity_theory",
+    "gold_title": "Computational_complexity_theory",
+    "gold_url": null,
+    "answer_aliases": [
+      "yes or no"
+    ]
+  },
+  {
+    "question_id": "squad-56e19724cd28a01900c679f7",
+    "question": "How many outputs are expected for each input in a function problem?",
+    "answerable": true,
+    "expected_answer": "a single output",
+    "gold_context": "A function problem is a computational problem where a single output (of a total function) is expected for every input, but the output is more complex than that of a decision problem, that is, it isn't just yes or no. Notable examples include the traveling salesman problem and the integer factorization problem.",
+    "gold_span": "a single output",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Computational_complexity_theory",
+    "gold_title": "Computational_complexity_theory",
+    "gold_url": null,
+    "answer_aliases": [
+      "a single output",
+      "single"
+    ]
+  },
+  {
+    "question_id": "squad-5705f36452bb891400689718",
+    "question": "Which organizations most commonly divide and promote the state?",
+    "answerable": true,
+    "expected_answer": "regional tourism groups",
+    "gold_context": "The state is most commonly divided and promoted by its regional tourism groups as consisting of northern, central, and southern California regions. The two AAA Auto Clubs of the state, the California State Automobile Association and the Automobile Club of Southern California, choose to simplify matters by dividing the state along the lines where their jurisdictions for membership apply, as either northern or southern California, in contrast to the three-region point of view.",
+    "gold_span": "regional tourism groups",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Southern_California",
+    "gold_title": "Southern_California",
+    "gold_url": null,
+    "answer_aliases": [
+      "regional tourism groups",
+      "AAA Auto Clubs"
+    ]
+  },
+  {
+    "question_id": "squad-5705fd8475f01819005e7843",
+    "question": "The region spans which mountains other than the Transverse ranges?",
+    "answerable": true,
+    "expected_answer": "Peninsular",
+    "gold_context": "Southern California consists of one of the more varied collections of geologic, topographic, and natural ecosystem landscapes in a diversity outnumbering other major regions in the state and country. The region spans from Pacific Ocean islands, shorelines, beaches, and coastal plains, through the Transverse and Peninsular Ranges with their peaks, into the large and small interior valleys, to the vast deserts of California.",
+    "gold_span": "Peninsular",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Southern_California",
+    "gold_title": "Southern_California",
+    "gold_url": null,
+    "answer_aliases": [
+      "Peninsular",
+      "Peninsular Ranges"
+    ]
+  },
+  {
+    "question_id": "squad-5705fec152bb89140068977c",
+    "question": "What magnitude was the 1994 Northridge earthquake?",
+    "answerable": true,
+    "expected_answer": "6.7",
+    "gold_context": "Each year, the southern California area has about 10,000 earthquakes. Nearly all of them are so small that they are not felt. Only several hundred are greater than magnitude 3.0, and only about 15–20 are greater than magnitude 4.0. The magnitude 6.7 1994 Northridge earthquake was particularly destructive, causing a substantial number of deaths, injuries, and structural collapses. It caused the most property damage of any earthquake in U.S. history, estimated at over $20 billion.",
+    "gold_span": "6.7",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Southern_California",
+    "gold_title": "Southern_California",
+    "gold_url": null,
+    "answer_aliases": [
+      "6.7"
+    ]
+  },
+  {
+    "question_id": "squad-570603c475f01819005e7884",
+    "question": "What is the state average growth rate?",
+    "answerable": true,
+    "expected_answer": "10.0%",
+    "gold_context": "As of the 2010 United States Census, southern California has a population of 22,680,010. Despite a reputation for high growth rates, southern California's rate grew less than the state average of 10.0% in the 2000s as California's growth became concentrated in the northern part of the state due to a stronger, tech-oriented economy in the Bay Area and an emerging Greater Sacramento region.",
+    "gold_span": "10.0%",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Southern_California",
+    "gold_title": "Southern_California",
+    "gold_url": null,
+    "answer_aliases": [
+      "10.0%"
+    ]
+  },
+  {
+    "question_id": "squad-57060a1175f01819005e78d6",
+    "question": "What industry has managed to survive major military spending cutbacks?",
+    "answerable": true,
+    "expected_answer": "aerospace",
+    "gold_context": ", cattle and citrus were major industries until farmlands were turned into suburbs. Although military spending cutbacks have had an impact, aerospace continues to be a major factor.",
+    "gold_span": "aerospace",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Southern_California",
+    "gold_title": "Southern_California",
+    "gold_url": null,
+    "answer_aliases": [
+      "aerospace"
+    ]
+  },
+  {
+    "question_id": "squad-57060a6e52bb8914006897f8",
+    "question": "What type of district is southern California home to many of?",
+    "answerable": true,
+    "expected_answer": "business",
+    "gold_context": "Southern California is home to many major business districts. Central business districts (CBD) include Downtown Los Angeles, Downtown San Diego, Downtown San Bernardino, Downtown Bakersfield, South Coast Metro and Downtown Riverside.",
+    "gold_span": "business",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Southern_California",
+    "gold_title": "Southern_California",
+    "gold_url": null,
+    "answer_aliases": [
+      "business",
+      "major business"
+    ]
+  },
+  {
+    "question_id": "squad-5706143575f01819005e7951",
+    "question": "The Los Angeles Clippers are a team belonging to which sport?",
+    "answerable": true,
+    "expected_answer": "NBA",
+    "gold_context": "Professional sports teams in Southern California include teams from the NFL (Los Angeles Rams, San Diego Chargers); NBA (Los Angeles Lakers, Los Angeles Clippers); MLB (Los Angeles Dodgers, Los Angeles Angels of Anaheim, San Diego Padres); NHL (Los Angeles Kings, Anaheim Ducks); and MLS (LA Galaxy).",
+    "gold_span": "NBA",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Southern_California",
+    "gold_title": "Southern_California",
+    "gold_url": null,
+    "answer_aliases": [
+      "NBA"
+    ]
+  },
+  {
+    "question_id": "squad-57097c8fed30961900e841f2",
+    "question": "What did Alec Shelbrooke propose payments of benefits to be made on?",
+    "answerable": true,
+    "expected_answer": "Welfare Cash Card",
+    "gold_context": "In December, the UK’s parliament heard a claim that a subscription to BSkyB was ‘often damaging’, along with alcohol, tobacco and gambling. Conservative MP Alec Shelbrooke was proposing the payments of benefits and tax credits on a \"Welfare Cash Card\", in the style of the Supplemental Nutrition Assistance Program, that could be used to buy only \"essentials\".",
+    "gold_span": "Welfare Cash Card",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Sky_(United_Kingdom)",
+    "gold_title": "Sky_(United_Kingdom)",
+    "gold_url": null,
+    "answer_aliases": [
+      "Welfare Cash Card"
+    ]
+  },
+  {
+    "question_id": "squad-570d3468b3d812140066d543",
+    "question": "What type of manufacturing plant is Victoria soon losing?",
+    "answerable": true,
+    "expected_answer": "major car brands",
+    "gold_context": "Historically, Victoria has been the base for the manufacturing plants of the major car brands Ford, Toyota and Holden; however, closure announcements by all three companies in the 21st century will mean that Australia will no longer be a base for the global car industry, with Toyota's statement in February 2014 outlining a closure year of 2017. Holden's announcement occurred in May 2013, followed by Ford's decision in December of the same year (Ford's Victorian plants—in Broadmeadows and Geelong—will close in October 2016).",
+    "gold_span": "major car brands",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Victoria_(Australia)",
+    "gold_title": "Victoria_(Australia)",
+    "gold_url": null,
+    "answer_aliases": [
+      "major car brands",
+      "car"
+    ]
+  },
+  {
+    "question_id": "squad-570d4030fed7b91900d45da1",
+    "question": "What entity owns V/Line?",
+    "answerable": true,
+    "expected_answer": "Victorian Government",
+    "gold_context": "Rail transport in Victoria is provided by several private and public railway operators who operate over government-owned lines. Major operators include: Metro Trains Melbourne which runs an extensive, electrified, passenger system throughout Melbourne and suburbs; V/Line which is now owned by the Victorian Government, operates a concentrated service to major regional centres, as well as long distance services on other lines; Pacific National, CFCL Australia which operate freight services; Great Southern Rail which operates The Overland Melbourne—Adelaide; and NSW TrainLink which operates XPTs Melbourne—Sydney.",
+    "gold_span": "Victorian Government",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Victoria_(Australia)",
+    "gold_title": "Victoria_(Australia)",
+    "gold_url": null,
+    "answer_aliases": [
+      "Victorian Government",
+      "the Victorian Government"
+    ]
+  },
+  {
+    "question_id": "squad-571097baa58dae1900cd6a9a",
+    "question": "In what city is the last Huguenot congregation in the US?",
+    "answerable": true,
+    "expected_answer": "Charleston, South Carolina",
+    "gold_context": "Paul Revere was descended from Huguenot refugees, as was Henry Laurens, who signed the Articles of Confederation for South Carolina; Jack Jouett, who made the ride from Cuckoo Tavern to warn Thomas Jefferson and others that Tarleton and his men were on their way to arrest him for crimes against the king; Francis Marion, and a number of other leaders of the American Revolution and later statesmen. The last active Huguenot congregation in North America worships in Charleston, South Carolina, at a church that dates to 1844. The Huguenot Society of America maintains Manakin Episcopal Church in Virginia as an historic shrine with occasional services.",
+    "gold_span": "Charleston, South Carolina",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Huguenot",
+    "gold_title": "Huguenot",
+    "gold_url": null,
+    "answer_aliases": [
+      "Charleston, South Carolina",
+      "Charleston"
+    ]
+  },
+  {
+    "question_id": "squad-57111428b654c5140001faff",
+    "question": "When was the St. Bartholomew's Day Massacre?",
+    "answerable": true,
+    "expected_answer": "24 August – 3 October 1572",
+    "gold_context": "In what became known as the St. Bartholomew's Day Massacre of 24 August – 3 October 1572, Catholics killed thousands of Huguenots in Paris. Similar massacres took place in other towns in the weeks following.",
+    "gold_span": "24 August – 3 October 1572",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Huguenot",
+    "gold_title": "Huguenot",
+    "gold_url": null,
+    "answer_aliases": [
+      "24 August – 3 October 1572"
+    ]
+  },
+  {
+    "question_id": "squad-5711163bb654c5140001fb17",
+    "question": "What is the name of the third, permanent Huguenot church in New Rochelle?",
+    "answerable": true,
+    "expected_answer": "Trinity-St. Paul's Episcopal Church",
+    "gold_context": "Previous to the erection of it, the strong men would often walk twenty-three miles on Saturday evening, the distance by the road from New Rochelle to New York, to attend the Sunday service. The church was eventually replaced by a third, Trinity-St. Paul's Episcopal Church, which contains heirlooms including the original bell from the French Huguenot Church \"Eglise du St.",
+    "gold_span": "Trinity-St. Paul's Episcopal Church",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Huguenot",
+    "gold_title": "Huguenot",
+    "gold_url": null,
+    "answer_aliases": [
+      "Trinity-St. Paul's Episcopal Church"
+    ]
+  },
+  {
+    "question_id": "squad-571117d4a58dae1900cd6c0b",
+    "question": "Where did he begin teaching?",
+    "answerable": true,
+    "expected_answer": "Rotterdam",
+    "gold_context": "One of the most prominent Huguenot refugees in the Netherlands was Pierre Bayle. He started teaching in Rotterdam, where he finished writing and publishing his multi-volume masterpiece, Historical and Critical Dictionary. It became one of the 100 foundational texts of the US Library of Congress.",
+    "gold_span": "Rotterdam",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Huguenot",
+    "gold_title": "Huguenot",
+    "gold_url": null,
+    "answer_aliases": [
+      "Rotterdam"
+    ]
+  },
+  {
+    "question_id": "squad-57111ab8a58dae1900cd6c3f",
+    "question": "What dual titles did Frederick William hold?",
+    "answerable": true,
+    "expected_answer": "Elector of Brandenburg and Duke of Prussia",
+    "gold_context": "Peter and St. Paul, Angermünde) by Frederick William, Elector of Brandenburg and Duke of Prussia. The Huguenots furnished two new regiments of his army: the Altpreußische Infantry Regiments No.",
+    "gold_span": "Elector of Brandenburg and Duke of Prussia",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Huguenot",
+    "gold_title": "Huguenot",
+    "gold_url": null,
+    "answer_aliases": [
+      "Elector of Brandenburg and Duke of Prussia"
+    ]
+  },
+  {
+    "question_id": "squad-57113ba6b654c5140001fc22",
+    "question": "After the operators are warned by the escape of the steam, what may they then do?",
+    "answerable": true,
+    "expected_answer": "manually suppress the fire",
+    "gold_context": "Lead fusible plugs may be present in the crown of the boiler's firebox. If the water level drops, such that the temperature of the firebox crown increases significantly, the lead melts and the steam escapes, warning the operators, who may then manually suppress the fire. Except in the smallest of boilers the steam escape has little effect on dampening the fire.",
+    "gold_span": "manually suppress the fire",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Steam_engine",
+    "gold_title": "Steam_engine",
+    "gold_url": null,
+    "answer_aliases": [
+      "manually suppress the fire"
+    ]
+  },
+  {
+    "question_id": "squad-57114e8d50c2381900b54a5c",
+    "question": "What is the turbine entry temperature of a steam turbine, in degrees Celsius?",
+    "answerable": true,
+    "expected_answer": "565",
+    "gold_context": "The efficiency of a Rankine cycle is usually limited by the working fluid. Without the pressure reaching supercritical levels for the working fluid, the temperature range the cycle can operate over is quite small; in steam turbines, turbine entry temperatures are typically 565 °C (the creep limit of stainless steel) and condenser temperatures are around 30 °C. This gives a theoretical Carnot efficiency of about 63% compared with an actual efficiency of 42% for a modern coal-fired power station.",
+    "gold_span": "565",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Steam_engine",
+    "gold_title": "Steam_engine",
+    "gold_url": null,
+    "answer_aliases": [
+      "565",
+      "565 °C"
+    ]
+  },
+  {
+    "question_id": "squad-571166352419e314009555f1",
+    "question": "What do nuclear power plants heat to create electricity?",
+    "answerable": true,
+    "expected_answer": "water",
+    "gold_context": "Virtually all nuclear power plants generate electricity by heating water to provide steam that drives a turbine connected to an electrical generator. Nuclear-powered ships and submarines either use a steam turbine directly for main propulsion, with generators providing auxiliary power, or else employ turbo-electric transmission, where the steam drives a turbo generator set with propulsion provided by electric motors.",
+    "gold_span": "water",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Steam_engine",
+    "gold_title": "Steam_engine",
+    "gold_url": null,
+    "answer_aliases": [
+      "water"
+    ]
+  },
+  {
+    "question_id": "squad-571a484210f8ca1400304fbf",
+    "question": "Which gas makes up 20.8% of the Earth's atmosphere?",
+    "answerable": true,
+    "expected_answer": "Diatomic oxygen",
+    "gold_context": "Oxygen is a chemical element with symbol O and atomic number 8. It is a member of the chalcogen group on the periodic table and is a highly reactive nonmetal and oxidizing agent that readily forms compounds (notably oxides) with most elements. By mass, oxygen is the third-most abundant element in the universe, after hydrogen and helium. At standard temperature and pressure, two atoms of the element bind to form dioxygen, a colorless and odorless diatomic gas with the formula O\n2. Diatomic oxygen gas constitutes 20.8% of the Earth's atmosphere. However, monitoring of atmospheric oxygen levels show a global downward trend, because of fossil-fuel burning. Oxygen is the most abundant element by mass in the Earth's crust as part of oxide compounds such as silicon dioxide, making up almost half of the crust's mass.",
+    "gold_span": "Diatomic oxygen",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Oxygen",
+    "gold_title": "Oxygen",
+    "gold_url": null,
+    "answer_aliases": [
+      "Diatomic oxygen",
+      "Diatomic oxygen gas"
+    ]
+  },
+  {
+    "question_id": "squad-571a484210f8ca1400304fc0",
+    "question": "How many atoms combine to form dioxygen?",
+    "answerable": true,
+    "expected_answer": "two atoms",
+    "gold_context": "By mass, oxygen is the third-most abundant element in the universe, after hydrogen and helium. At standard temperature and pressure, two atoms of the element bind to form dioxygen, a colorless and odorless diatomic gas with the formula O\n2. Diatomic oxygen gas constitutes 20.8% of the Earth's atmosphere.",
+    "gold_span": "two atoms",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Oxygen",
+    "gold_title": "Oxygen",
+    "gold_url": null,
+    "answer_aliases": [
+      "two atoms",
+      "two"
+    ]
+  },
+  {
+    "question_id": "squad-5725b33f6a3fe71400b8952e",
+    "question": "What was the price of oil in March of 1974?",
+    "answerable": true,
+    "expected_answer": "nearly $12",
+    "gold_context": "The 1973 oil crisis began in October 1973 when the members of the Organization of Arab Petroleum Exporting Countries (OAPEC, consisting of the Arab members of OPEC plus Egypt and Syria) proclaimed an oil embargo. By the end of the embargo in March 1974, the price of oil had risen from US$3 per barrel to nearly $12 globally; US prices were significantly higher. The embargo caused an oil crisis, or \"shock\", with many short- and long-term effects on global politics and the global economy.",
+    "gold_span": "nearly $12",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — 1973_oil_crisis",
+    "gold_title": "1973_oil_crisis",
+    "gold_url": null,
+    "answer_aliases": [
+      "nearly $12",
+      "$12"
+    ]
+  },
+  {
+    "question_id": "squad-5725b92e38643c19005acbd5",
+    "question": "When did oil finally returned to its Bretton Woods levels?",
+    "answerable": true,
+    "expected_answer": "1973–1974",
+    "gold_context": "OPEC ministers had not developed institutional mechanisms to update prices in sync with changing market conditions, so their real incomes lagged. The substantial price increases of 1973–1974 largely returned their prices and corresponding incomes to Bretton Woods levels in terms of commodities such as gold.",
+    "gold_span": "1973–1974",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — 1973_oil_crisis",
+    "gold_title": "1973_oil_crisis",
+    "gold_url": null,
+    "answer_aliases": [
+      "1973–1974",
+      "1974"
+    ]
+  },
+  {
+    "question_id": "squad-5725be0f271a42140099d118",
+    "question": "What has allowed for the Savanna region to expand into the tropics?",
+    "answerable": true,
+    "expected_answer": "Climate fluctuations during the last 34 million years have allowed savanna regions to expand into the tropics.",
+    "gold_context": "From 66–34 Mya, the rainforest extended as far south as 45°. Climate fluctuations during the last 34 million years have allowed savanna regions to expand into the tropics. During the Oligocene, for example, the rainforest spanned a relatively narrow band.",
+    "gold_span": "Climate fluctuations during the last 34 million years have allowed savanna regions to expand into the tropics.",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Amazon_rainforest",
+    "gold_title": "Amazon_rainforest",
+    "gold_url": null,
+    "answer_aliases": [
+      "Climate fluctuations during the last 34 million years have allowed savanna regions to expand into the tropics.",
+      "Climate fluctuations during the last 34 million years",
+      "Climate fluctuations"
+    ]
+  },
+  {
+    "question_id": "squad-5725be0f271a42140099d11b",
+    "question": "Did the rainforest managed to thrive during the glacial periods?",
+    "answerable": true,
+    "expected_answer": "However, the rainforest still managed to thrive during these glacial periods, allowing for the survival and evolution of a broad diversity of species.",
+    "gold_context": "It expanded again during the Middle Miocene, then retracted to a mostly inland formation at the last glacial maximum. However, the rainforest still managed to thrive during these glacial periods, allowing for the survival and evolution of a broad diversity of species.",
+    "gold_span": "However, the rainforest still managed to thrive during these glacial periods, allowing for the survival and evolution of a broad diversity of species.",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Amazon_rainforest",
+    "gold_title": "Amazon_rainforest",
+    "gold_url": null,
+    "answer_aliases": [
+      "However, the rainforest still managed to thrive during these glacial periods, allowing for the survival and evolution of a broad diversity of species.",
+      "still managed to thrive"
+    ]
+  },
+  {
+    "question_id": "squad-5725ce4d38643c19005acd51",
+    "question": "How do you pronounce Fresno?",
+    "answerable": true,
+    "expected_answer": "(/ˈfrɛznoʊ/ FREZ-noh)",
+    "gold_context": "Fresno (/ˈfrɛznoʊ/ FREZ-noh), the county seat of Fresno County, is a city in the U.S. state of California. As of 2015, the city's population was 520,159, making it the fifth-largest city in California, the largest inland city in California and the 34th-largest in the nation. Fresno is in the center of the San Joaquin Valley and is the largest city in the Central Valley, which contains the San Joaquin Valley. It is approximately 220 miles (350 km) northwest of Los Angeles, 170 miles (270 km) south of the state capital, Sacramento, or 185 miles (300 km) south of San Francisco. The name Fresno means \"ash tree\" in Spanish, and an ash leaf is featured on the city's flag.",
+    "gold_span": "(/ˈfrɛznoʊ/ FREZ-noh)",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Fresno,_California",
+    "gold_title": "Fresno,_California",
+    "gold_url": null,
+    "answer_aliases": [
+      "(/ˈfrɛznoʊ/ FREZ-noh)",
+      "FREZ-noh"
+    ]
+  },
+  {
+    "question_id": "squad-57261dab38643c19005ad03a",
+    "question": "What is one of the reason that underdeveloped nations received aid from the oil income?",
+    "answerable": true,
+    "expected_answer": "shrinking Western demand",
+    "gold_context": "Some of the income was dispensed in the form of aid to other underdeveloped nations whose economies had been caught between higher oil prices and lower prices for their own export commodities, amid shrinking Western demand. Much went for arms purchases that exacerbated political tensions, particularly in the Middle East.",
+    "gold_span": "shrinking Western demand",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — 1973_oil_crisis",
+    "gold_title": "1973_oil_crisis",
+    "gold_url": null,
+    "answer_aliases": [
+      "shrinking Western demand",
+      "economies had been caught between higher oil prices and lower prices for their own export commodities"
+    ]
+  },
+  {
+    "question_id": "squad-5726378238643c19005ad314",
+    "question": "What did Davies call the System",
+    "answerable": true,
+    "expected_answer": "packet switching",
+    "gold_context": "Starting in 1965, Donald Davies at the National Physical Laboratory, UK, independently developed the same message routing methodology as developed by Baran. He called it packet switching, a more accessible name than Baran's, and proposed to build a nationwide network in the UK. He gave a talk on the proposal in 1966, after which a person from the Ministry of Defence (MoD) told him about Baran's work.",
+    "gold_span": "packet switching",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Packet_switching",
+    "gold_title": "Packet_switching",
+    "gold_url": null,
+    "answer_aliases": [
+      "packet switching"
+    ]
+  },
+  {
+    "question_id": "squad-5726378238643c19005ad315",
+    "question": "What was suggested at the Symposium in 1967",
+    "answerable": true,
+    "expected_answer": "suggested it for use in the ARPANET",
+    "gold_context": "He gave a talk on the proposal in 1966, after which a person from the Ministry of Defence (MoD) told him about Baran's work. A member of Davies' team (Roger Scantlebury) met Lawrence Roberts at the 1967 ACM Symposium on Operating System Principles and suggested it for use in the ARPANET.",
+    "gold_span": "suggested it for use in the ARPANET",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Packet_switching",
+    "gold_title": "Packet_switching",
+    "gold_url": null,
+    "answer_aliases": [
+      "suggested it for use in the ARPANET",
+      "use in the ARPANET"
+    ]
+  },
+  {
+    "question_id": "squad-572647e2dd62a815002e805e",
+    "question": "What did NSFNET eventually provide",
+    "answerable": true,
+    "expected_answer": "it developed into a major part of the Internet backbone",
+    "gold_context": "5 Mbit/s (T1), and 45 Mbit/s (T3) that were constructed to support NSF's networking initiatives from 1985-1995. Initially created to link researchers to the nation's NSF-funded supercomputing centers, through further public funding and private industry partnerships it developed into a major part of the Internet backbone.",
+    "gold_span": "it developed into a major part of the Internet backbone",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Packet_switching",
+    "gold_title": "Packet_switching",
+    "gold_url": null,
+    "answer_aliases": [
+      "it developed into a major part of the Internet backbone",
+      "a major part of the Internet backbone",
+      "major part of the Internet backbone"
+    ]
+  },
+  {
+    "question_id": "squad-572657d9dd62a815002e8234",
+    "question": "What changes the mineral content of a rock?",
+    "answerable": true,
+    "expected_answer": "heat and pressure",
+    "gold_context": "When a rock crystallizes from melt (magma and/or lava), it is an igneous rock. This rock can be weathered and eroded, and then redeposited and lithified into a sedimentary rock, or be turned into a metamorphic rock due to heat and pressure that change the mineral content of the rock which gives it a characteristic fabric. The sedimentary rock can then be subsequently turned into a metamorphic rock due to heat and pressure and is then weathered, eroded, deposited, and lithified, ultimately becoming a sedimentary rock.",
+    "gold_span": "heat and pressure",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Geology",
+    "gold_title": "Geology",
+    "gold_url": null,
+    "answer_aliases": [
+      "heat and pressure"
+    ]
+  },
+  {
+    "question_id": "squad-57265bdfdd62a815002e829e",
+    "question": "Why did GM, Ford and Chrysler introduced fuel-efficient and small cars to the US market?",
+    "answerable": true,
+    "expected_answer": "An increase in imported cars",
+    "gold_context": "An increase in imported cars into North America forced General Motors, Ford and Chrysler to introduce smaller and fuel-efficient models for domestic sales. The Dodge Omni / Plymouth Horizon from Chrysler, the Ford Fiesta and the Chevrolet Chevette all had four-cylinder engines and room for at least four passengers by the late 1970s.",
+    "gold_span": "An increase in imported cars",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — 1973_oil_crisis",
+    "gold_title": "1973_oil_crisis",
+    "gold_url": null,
+    "answer_aliases": [
+      "An increase in imported cars",
+      "An increase in imported cars into North America"
+    ]
+  },
+  {
+    "question_id": "squad-57265d08708984140094c39b",
+    "question": "In what decade was seafloor spreading discovered?",
+    "answerable": true,
+    "expected_answer": "the 1960s",
+    "gold_context": "In the 1960s, a series of discoveries, the most important of which was seafloor spreading, showed that the Earth's lithosphere, which includes the crust and rigid uppermost portion of the upper mantle, is separated into a number of tectonic plates that move across the plastically deforming, solid, upper mantle, which is called the asthenosphere. There is an intimate coupling between the movement of the plates on the surface and the convection of the mantle: oceanic plate motions and mantle convection currents always move in the same direction, because the oceanic lithosphere is the rigid upper thermal boundary layer of the convecting mantle.",
+    "gold_span": "the 1960s",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Geology",
+    "gold_title": "Geology",
+    "gold_url": null,
+    "answer_aliases": [
+      "the 1960s",
+      "1960s"
+    ]
+  },
+  {
+    "question_id": "squad-5726926a5951b619008f770b",
+    "question": "Who found that a culture had developed where few Commissioners had any sense of responsibility?",
+    "answerable": true,
+    "expected_answer": "a Committee of Independent Experts",
+    "gold_context": "This resulted in one main case, Commission v Edith Cresson where the European Court of Justice held that a Commissioner giving her dentist a job, for which he was clearly unqualified, did in fact not break any law. By contrast to the ECJ's relaxed approach, a Committee of Independent Experts found that a culture had developed where few Commissioners had ‘even the slightest sense of responsibility’. This led to the creation of the European Anti-fraud Office.",
+    "gold_span": "a Committee of Independent Experts",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — European_Union_law",
+    "gold_title": "European_Union_law",
+    "gold_url": null,
+    "answer_aliases": [
+      "a Committee of Independent Experts",
+      "Committee of Independent Experts"
+    ]
+  },
+  {
+    "question_id": "squad-5728349dff5b5019007d9efe",
+    "question": "What is the Dutch word for the Amazon rainforest?",
+    "answerable": true,
+    "expected_answer": "Amazoneregenwoud",
+    "gold_context": "The Amazon rainforest (Portuguese: Floresta Amazônica or Amazônia; Spanish: Selva Amazónica, Amazonía or usually Amazonia; French: Forêt amazonienne; Dutch: Amazoneregenwoud), also known in English as Amazonia or the Amazon Jungle, is a moist broadleaf forest that covers most of the Amazon basin of South America. This basin encompasses 7,000,000 square kilometres (2,700,000 sq mi), of which 5,500,000 square kilometres (2,100,000 sq mi) are covered by the rainforest.",
+    "gold_span": "Amazoneregenwoud",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Amazon_rainforest",
+    "gold_title": "Amazon_rainforest",
+    "gold_url": null,
+    "answer_aliases": [
+      "Amazoneregenwoud"
+    ]
+  },
+  {
+    "question_id": "squad-5729f2646aef051400155134",
+    "question": "How many plant species are of interest to society and manufacturers exist in the amazon rainforest?",
+    "answerable": true,
+    "expected_answer": "438,000",
+    "gold_context": "The average plant biomass is estimated at 356 ± 47 tonnes per hectare. To date, an estimated 438,000 species of plants of economic and social interest have been registered in the region with many more remaining to be discovered or catalogued. The total number of tree species in the region is estimated at 16,000.",
+    "gold_span": "438,000",
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation — Amazon_rainforest",
+    "gold_title": "Amazon_rainforest",
+    "gold_url": null,
+    "answer_aliases": [
+      "438,000"
+    ]
+  },
+  {
+    "question_id": "squad-5a2c41c8bfd06b001a5aeaab",
+    "question": "When did Microsoft announce OneDrive will soon become SkyDrive?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation (unanswerable) — Sky_(United_Kingdom)",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "squad-5a55114d134fea001a0e18c5",
+    "question": "Who had influenced ARPANET?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation (unanswerable) — Packet_switching",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "squad-5a551d87134fea001a0e1946",
+    "question": "What types of access did Telstra provide?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation (unanswerable) — Packet_switching",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "squad-5a8397d0e60761001a2eb7ff",
+    "question": "What kind of populations can be wiped out temporarily by shrimp?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation (unanswerable) — Ctenophora",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "squad-5ad11097645df0001a2d0be0",
+    "question": "How did the principle treaties that form the Canadian Union begin?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation (unanswerable) — European_Union_law",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "squad-5ad14468645df0001a2d148d",
+    "question": "What type of rules are expressly provided for in treaties?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation (unanswerable) — European_Union_law",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "squad-5ad24b13d7d075001a428bcd",
+    "question": "What has a bond energy of 121 pm?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation (unanswerable) — Oxygen",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "squad-5ad3c3bc604f3c001a3fef9f",
+    "question": "What is the power-to-weight ratio of a steam plant compared to that of a steam engine?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation (unanswerable) — Steam_engine",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "squad-5ad545545b96ef001a10ac06",
+    "question": "What are many types of Turing machines not used for?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation (unanswerable) — Computational_complexity_theory",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  },
+  {
+    "question_id": "squad-5ad5719f5b96ef001a10aeef",
+    "question": "Who wrote a paper on real time computations in 1973?",
+    "answerable": false,
+    "expected_answer": null,
+    "gold_context": null,
+    "gold_span": null,
+    "dataset": "squad",
+    "split": "validation",
+    "set_type": "official",
+    "source": "SQuAD 2.0 validation (unanswerable) — Computational_complexity_theory",
+    "gold_title": null,
+    "gold_url": null,
+    "answer_aliases": []
+  }
 ]

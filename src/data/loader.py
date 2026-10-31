@@ -1,21 +1,22 @@
 """
-Natural Questions dataset loader.
+Dataset loaders for the RAG knowledge bases and benchmarks.
 
-Downloads Google's Natural Questions dataset from HuggingFace
-and prepares it for the RAG pipeline.
+The wiki knowledge base is a slice of Simple English Wikipedia.  SQuAD and
+TriviaQA loaders use the official validation split, because that is the split
+the benchmark files are built from.  Keeping the corpus and the benchmark on
+the same split is what makes retrieval results comparable.
 
-Natural Questions = real Google Search queries + Wikipedia answers.
-We use it because:
-  - It's an industry-standard QA benchmark
-  - Questions are REAL (not synthetic)
-  - Answers come from Wikipedia articles (perfect for RAG)
+Natural Questions (``nq_open``) is kept as a helper for future experiments,
+but it is not the source of the Simple Wikipedia knowledge base.
 """
 
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import pyarrow.parquet as pq
 from datasets import load_dataset
+from huggingface_hub import hf_hub_download
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,18 @@ logger = logging.getLogger(__name__)
 DATA_DIR = Path(__file__).parent.parent.parent / "data"
 RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
+
+# Official dataset identifiers used by both ingestion and benchmark building.
+SQUAD_DATASET_ID = "rajpurkar/squad_v2"
+SQUAD_SPLIT = "validation"
+TRIVIA_DATASET_ID = "mandarjoshi/trivia_qa"
+TRIVIA_CONFIG = "rc.wikipedia"
+TRIVIA_SPLIT = "validation"
+TRIVIA_PARQUET_FILE = "rc.wikipedia/validation-00000-of-00001.parquet"
+
+# Default corpus size.  The benchmark builders use the same value so that
+# every gold document is present in the collection created by ingestion.
+DEFAULT_CORPUS_SIZE = 500
 
 
 @dataclass
@@ -149,6 +162,145 @@ def load_wikipedia_contexts(
         documents.append(doc)
 
     logger.info(f"Loaded {len(documents)} Wikipedia articles")
+    return documents
+
+
+def load_squad_validation_examples(
+    max_contexts: int = DEFAULT_CORPUS_SIZE,
+) -> list[dict]:
+    """
+    Load SQuAD 2.0 validation examples whose contexts fit in the corpus slice.
+
+    The first ``max_contexts`` unique contexts are kept, in dataset order.
+    Every question attached to those contexts is returned, so the benchmark
+    builder can sample questions without leaving the ingested corpus.
+    """
+    logger.info(f"Loading SQuAD 2.0 validation examples (max {max_contexts} contexts)...")
+    dataset = load_dataset(SQUAD_DATASET_ID, split=SQUAD_SPLIT)
+
+    examples: list[dict] = []
+    seen: set[str] = set()
+    for example in dataset:
+        context = example["context"]
+        if len(context) <= 100:
+            continue
+        key = context[:100]
+        if key not in seen:
+            if len(seen) >= max_contexts:
+                break
+            seen.add(key)
+        examples.append(example)
+
+    logger.info(f"Loaded {len(examples)} SQuAD examples from {len(seen)} unique contexts")
+    return examples
+
+
+def load_squad_validation_documents(
+    max_contexts: int = DEFAULT_CORPUS_SIZE,
+) -> list[Document]:
+    """Load SQuAD validation contexts as documents for ingestion."""
+    documents: list[Document] = []
+    seen: set[str] = set()
+    for example in load_squad_validation_examples(max_contexts=max_contexts):
+        context = example["context"]
+        key = context[:100]
+        if key in seen:
+            continue
+        seen.add(key)
+        documents.append(
+            Document(
+                content=context,
+                title=example["title"],
+                source="squad_v2",
+                language="en",
+            )
+        )
+    return documents
+
+
+def load_trivia_validation_examples(
+    max_contexts: int = DEFAULT_CORPUS_SIZE,
+) -> list[dict]:
+    """
+    Load TriviaQA ``rc.wikipedia`` validation examples with entity evidence.
+
+    The streaming ``datasets`` path currently crashes on interpreter shutdown
+    with the pinned HuggingFace stack, so the validation Parquet file is read
+    directly.  Only examples that have Wikipedia entity pages are returned;
+    those are the documents the ingestion pipeline stores.
+    """
+    logger.info(f"Loading TriviaQA rc.wikipedia validation (max {max_contexts} contexts)...")
+    parquet_path = hf_hub_download(
+        repo_id=TRIVIA_DATASET_ID,
+        filename=TRIVIA_PARQUET_FILE,
+        repo_type="dataset",
+    )
+
+    parquet = pq.ParquetFile(parquet_path)
+    examples: list[dict] = []
+    seen: set[str] = set()
+    corpus_full = False
+
+    for batch in parquet.iter_batches(
+        batch_size=64,
+        columns=["question", "question_id", "entity_pages", "answer"],
+    ):
+        for row in batch.to_pylist():
+            entity_pages = row.get("entity_pages") or {}
+            titles = entity_pages.get("title") or []
+            contexts = entity_pages.get("wiki_context") or []
+            pairs = [
+                (title, context)
+                for title, context in zip(titles, contexts, strict=False)
+                if context and len(context) > 100
+            ]
+            if not pairs:
+                continue
+
+            for _, context in pairs:
+                key = context[:100]
+                if key not in seen:
+                    if len(seen) >= max_contexts:
+                        corpus_full = True
+                        break
+                    seen.add(key)
+
+            if corpus_full:
+                break
+            examples.append(row)
+
+        if corpus_full:
+            break
+
+    logger.info(f"Loaded {len(examples)} TriviaQA examples from {len(seen)} unique contexts")
+    return examples
+
+
+def load_trivia_validation_documents(
+    max_contexts: int = DEFAULT_CORPUS_SIZE,
+) -> list[Document]:
+    """Load TriviaQA entity-page evidence as documents for ingestion."""
+    documents: list[Document] = []
+    seen: set[str] = set()
+    for example in load_trivia_validation_examples(max_contexts=max_contexts):
+        entity_pages = example.get("entity_pages") or {}
+        titles = entity_pages.get("title") or []
+        contexts = entity_pages.get("wiki_context") or []
+        for title, context in zip(titles, contexts, strict=False):
+            if not context or len(context) <= 100:
+                continue
+            key = context[:100]
+            if key in seen:
+                continue
+            seen.add(key)
+            documents.append(
+                Document(
+                    content=context,
+                    title=title or example["question"],
+                    source="trivia_qa",
+                    language="en",
+                )
+            )
     return documents
 
 

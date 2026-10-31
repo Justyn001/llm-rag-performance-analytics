@@ -1,0 +1,251 @@
+{
+  "schema_version": "2.0",
+  "dataset": "wiki",
+  "source_dataset": "wikimedia/wikipedia",
+  "source_config": "20231101.simple",
+  "source_split": "train[:500]",
+  "collection": "rag_wiki_512",
+  "validation": "Every answerable item is resolved against the exact article text stored in Qdrant. Gold contexts and spans are extracted from that text by src.evaluation.build_benchmarks; the build fails if an answer or article is missing.",
+  "questions": [
+    {
+      "question_id": "wiki-001",
+      "question": "What is the population of Cuba?",
+      "answer": "13 million",
+      "article": "Cuba"
+    },
+    {
+      "question_id": "wiki-002",
+      "question": "Where is Las Vegas located?",
+      "answer": "Nevada",
+      "article": "Las Vegas"
+    },
+    {
+      "question_id": "wiki-003",
+      "question": "Who invented calculus?",
+      "answer": "Isaac Newton",
+      "article": "Calculus"
+    },
+    {
+      "question_id": "wiki-004",
+      "question": "The Vatican City is the headquarters of which organization?",
+      "answer": "Roman Catholic Church",
+      "article": "Vatican City"
+    },
+    {
+      "question_id": "wiki-005",
+      "question": "What is Belgium famous for?",
+      "answer": "beer, chocolate, waffles and french fries",
+      "article": "Belgium"
+    },
+    {
+      "question_id": "wiki-006",
+      "question": "What do people call the side of a coin with the face?",
+      "answer": "heads",
+      "article": "Probability"
+    },
+    {
+      "question_id": "wiki-007",
+      "question": "How long is a year?",
+      "answer": "365 days",
+      "article": "Year"
+    },
+    {
+      "question_id": "wiki-008",
+      "question": "What do transmission electron microscopes fire into the object being looked at?",
+      "answer": "cathode rays",
+      "article": "Microscope"
+    },
+    {
+      "question_id": "wiki-009",
+      "question": "What is art?",
+      "answer": "creative activity",
+      "article": "Art"
+    },
+    {
+      "question_id": "wiki-010",
+      "question": "Where were ancient Greek plays performed?",
+      "answer": "amphitheatres",
+      "article": "Theatre"
+    },
+    {
+      "question_id": "wiki-011",
+      "question": "What can words differ in, in a tone language?",
+      "answer": "tones",
+      "article": "Tone language"
+    },
+    {
+      "question_id": "wiki-012",
+      "question": "How many measurements are within two standard deviations of the average?",
+      "answer": "95 of every 100 measurements",
+      "article": "Statistics"
+    },
+    {
+      "question_id": "wiki-013",
+      "question": "When does the history of anatomy date back to?",
+      "answer": "1600 BC",
+      "article": "Anatomy"
+    },
+    {
+      "question_id": "wiki-014",
+      "question": "What is a metre?",
+      "answer": "basic unit of length in the SI measurement system",
+      "article": "Metre"
+    },
+    {
+      "question_id": "wiki-015",
+      "question": "How many members are elected to the Parliament of Finland?",
+      "answer": "200 members",
+      "article": "Finland"
+    },
+    {
+      "question_id": "wiki-016",
+      "question": "What climates are different apple variants available for?",
+      "answer": "temperate and subtropical climates",
+      "article": "Apple"
+    },
+    {
+      "question_id": "wiki-017",
+      "question": "What are popular applications on Microsoft Windows?",
+      "answer": "word processors",
+      "article": "Microsoft Windows"
+    },
+    {
+      "question_id": "wiki-018",
+      "question": "What forms a service economy?",
+      "answer": "service trades",
+      "article": "Service economy"
+    },
+    {
+      "question_id": "wiki-019",
+      "question": "Which planet is the largest in the Solar System?",
+      "answer": "largest planet in the Solar System",
+      "article": "Jupiter"
+    },
+    {
+      "question_id": "wiki-020",
+      "question": "Why does Mars appear red?",
+      "answer": "red color",
+      "article": "Mars"
+    },
+    {
+      "question_id": "wiki-021",
+      "question": "Which planet is known for its rings?",
+      "answer": "rings",
+      "article": "Saturn"
+    },
+    {
+      "question_id": "wiki-022",
+      "question": "Which planet is the eighth and farthest from the Sun?",
+      "answer": "eighth and farthest planet from the Sun",
+      "article": "Neptune"
+    },
+    {
+      "question_id": "wiki-023",
+      "question": "Which planet is the smallest in the Solar System?",
+      "answer": "smallest planet in the Solar System",
+      "article": "Mercury (planet)"
+    },
+    {
+      "question_id": "wiki-024",
+      "question": "What is the Milky Way?",
+      "answer": "our home galaxy",
+      "article": "Milky Way"
+    },
+    {
+      "question_id": "wiki-025",
+      "question": "What is Antarctica?",
+      "answer": "Earth's southernmost continent",
+      "article": "Antarctica"
+    },
+    {
+      "question_id": "wiki-026",
+      "question": "Where is the Pacific Ocean?",
+      "answer": "body of water between Asia and Australia",
+      "article": "Pacific Ocean"
+    },
+    {
+      "question_id": "wiki-027",
+      "question": "What is the Arctic Ocean?",
+      "answer": "ocean around the North Pole",
+      "article": "Arctic Ocean"
+    },
+    {
+      "question_id": "wiki-028",
+      "question": "What is the capital of Australia?",
+      "answer": "Canberra",
+      "article": "Australia"
+    },
+    {
+      "question_id": "wiki-029",
+      "question": "What is the capital of Brazil?",
+      "answer": "Brasília",
+      "article": "Brazil"
+    },
+    {
+      "question_id": "wiki-030",
+      "question": "What is the largest city in Quebec?",
+      "answer": "largest city in the province of Quebec",
+      "article": "Montreal"
+    },
+    {
+      "question_id": "wiki-control-001",
+      "question": "Who is the current king of France?",
+      "answerable": false,
+      "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus"
+    },
+    {
+      "question_id": "wiki-control-002",
+      "question": "What is the latest iPhone model?",
+      "answerable": false,
+      "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus"
+    },
+    {
+      "question_id": "wiki-control-003",
+      "question": "What are the rules of Quidditch?",
+      "answerable": false,
+      "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus"
+    },
+    {
+      "question_id": "wiki-control-004",
+      "question": "Who won the 2024 US presidential election?",
+      "answerable": false,
+      "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus"
+    },
+    {
+      "question_id": "wiki-control-005",
+      "question": "What is the recipe for tiramisu?",
+      "answerable": false,
+      "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus"
+    },
+    {
+      "question_id": "wiki-control-006",
+      "question": "How do you program in Rust?",
+      "answerable": false,
+      "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus"
+    },
+    {
+      "question_id": "wiki-control-007",
+      "question": "What is the plot of the movie Inception?",
+      "answerable": false,
+      "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus"
+    },
+    {
+      "question_id": "wiki-control-008",
+      "question": "What is the capital of Wakanda?",
+      "answerable": false,
+      "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus"
+    },
+    {
+      "question_id": "wiki-control-009",
+      "question": "How many followers does Elon Musk have on Twitter?",
+      "answerable": false,
+      "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus"
+    },
+    {
+      "question_id": "wiki-control-010",
+      "question": "What is the best cryptocurrency to invest in?",
+      "answerable": false,
+      "source": "Custom control — not answerable from the ingested Simple Wikipedia corpus"
+    }
+  ]
+}
