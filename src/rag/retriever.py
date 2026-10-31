@@ -24,6 +24,39 @@ from src.config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
+
+class CollectionNotFoundError(RuntimeError):
+    """Raised when the configured Qdrant collection does not exist."""
+
+
+def _resolve_collection_name(
+    client: QdrantClient,
+    dataset: str,
+    chunk_size: int,
+) -> str:
+    """
+    Resolve the Qdrant collection for a dataset and fail loudly if it is missing.
+
+    There is intentionally no fallback to the legacy ``rag_documents``
+    collection. A fallback silently answers questions from the wrong dataset,
+    which makes benchmark results invalid.
+    """
+    collection_name = get_collection_name(dataset, chunk_size)
+    collections = sorted(c.name for c in client.get_collections().collections)
+
+    if collection_name not in collections:
+        available = ", ".join(collections) if collections else "none"
+        msg = (
+            f"Qdrant collection '{collection_name}' does not exist. "
+            f"Available collections: {available}. "
+            f"Ingest dataset '{dataset}' first: "
+            f"uv run python -m src.data.ingest --dataset {dataset} --all-configs"
+        )
+        raise CollectionNotFoundError(msg)
+
+    return collection_name
+
+
 # Cache for reranker model (loaded once)
 _reranker = None
 
@@ -67,22 +100,11 @@ class Retriever:
             port=self.settings.qdrant_port,
         )
 
-        self.collection_name = get_collection_name(dataset, rag_config.chunk_size)
-
-        # Check if collection exists, fallback to legacy name
-        collections = [c.name for c in self.client.get_collections().collections]
-        if self.collection_name not in collections:
-            # Fallback: try legacy collection name "rag_documents"
-            if "rag_documents" in collections:
-                logger.warning(
-                    f"Collection '{self.collection_name}' not found, "
-                    f"falling back to 'rag_documents'"
-                )
-                self.collection_name = "rag_documents"
-            else:
-                logger.warning(
-                    f"Collection '{self.collection_name}' not found. Available: {collections}"
-                )
+        self.collection_name = _resolve_collection_name(
+            self.client,
+            dataset,
+            rag_config.chunk_size,
+        )
 
         self.vector_store = QdrantVectorStore(
             client=self.client,

@@ -13,6 +13,7 @@ from src.config.models import ALL_MODELS
 from src.config.rag_config import get_rag_config
 from src.data.embeddings import EmbeddingProvider, get_embedding_model
 from src.rag.pipeline import RAGPipeline
+from src.rag.retriever import CollectionNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ class QueryRequest(BaseModel):
     language: str = Field(default="en", description="Language: 'en' or 'pl'")
     top_k: int = Field(default=5, ge=1, le=20, description="Number of context chunks")
     rag_config: str = Field(default="basic-512", description="RAG config name")
-    dataset: str = Field(default="wiki", description="Dataset name (wiki, squad, trivia)")
+    dataset: str = Field(default="wiki", description="Dataset name (currently: wiki)")
 
 
 class ContextChunk(BaseModel):
@@ -127,6 +128,9 @@ async def query_rag(request: QueryRequest):
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
+    except CollectionNotFoundError as e:
+        logger.error("Vector collection unavailable: %s", e)
+        raise HTTPException(status_code=503, detail=str(e)) from e
     except Exception as e:
         logger.error(f"Failed to initialize pipeline: {e}")
         raise HTTPException(

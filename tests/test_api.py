@@ -9,6 +9,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.api.main import app
+from src.api.routes import query as query_routes
+from src.rag.retriever import CollectionNotFoundError
 
 
 @pytest.fixture()
@@ -43,11 +45,7 @@ def test_test_sets_endpoint(client):
 
     assert response.status_code == 200
     test_sets = response.json()["test_sets"]
-    assert {test_set["name"] for test_set in test_sets} == {
-        "wikipedia-nq",
-        "squad",
-        "trivia",
-    }
+    assert {test_set["name"] for test_set in test_sets} == {"wikipedia-nq"}
     assert all(test_set["total_available"] == 50 for test_set in test_sets)
 
 
@@ -70,3 +68,32 @@ def test_get_unknown_test_set_returns_404(client):
     response = client.get("/api/test-sets/does-not-exist")
 
     assert response.status_code == 404
+
+
+def test_unready_test_sets_are_not_exposed(client):
+    for name in ("squad", "trivia"):
+        response = client.get(f"/api/test-sets/{name}")
+        assert response.status_code == 404
+
+
+def test_query_returns_clear_error_when_collection_is_missing(client, monkeypatch):
+    message = (
+        "Qdrant collection 'rag_squad_512' does not exist. Available collections: rag_wiki_512."
+    )
+
+    def fake_get_pipeline(*args, **kwargs):
+        raise CollectionNotFoundError(message)
+
+    monkeypatch.setattr(query_routes, "_get_pipeline", fake_get_pipeline)
+
+    response = client.post(
+        "/api/query",
+        json={
+            "question": "What is the capital of France?",
+            "model_name": "Gemma 3 4B",
+            "dataset": "squad",
+        },
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == message

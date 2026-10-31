@@ -56,6 +56,8 @@ class TestSetsResponse(BaseModel):
 
 
 # ---- Registry of benchmark files ----
+# SQuAD and TriviaQA are intentionally disabled until their Qdrant
+# collections and benchmark questions are aligned (see P0.3).
 TEST_SET_REGISTRY = {
     "wikipedia-nq": {
         "display_name": "Wikipedia + NQ",
@@ -64,23 +66,6 @@ TEST_SET_REGISTRY = {
         ),
         "file": "wikipedia_nq_benchmark.json",
         "dataset": "wiki",
-    },
-    "squad": {
-        "display_name": "SQuAD Science",
-        "description": (
-            "50 curated science & history questions from "
-            "SQuAD 2.0 dataset (40 answerable + 10 control)"
-        ),
-        "file": "squad_benchmark.json",
-        "dataset": "squad",
-    },
-    "trivia": {
-        "display_name": "TriviaQA",
-        "description": (
-            "50 curated trivia questions from TriviaQA dataset (40 answerable + 10 control)"
-        ),
-        "file": "trivia_benchmark.json",
-        "dataset": "trivia",
     },
 }
 
