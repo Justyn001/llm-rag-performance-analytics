@@ -233,6 +233,12 @@ results/plots/*
 !results/benchmarks/.gitkeep
 !results/plots/.gitkeep
 
+# Raw evaluation outputs (JSONL/CSV/SQLite/sheets are regenerated)
+data/evaluation/runs/
+data/evaluation/manual/
+data/evaluation/*.sqlite
+data/evaluation/*.sqlite-*
+
 # Qdrant & Ollama local data
 qdrant_data/
 ollama_data/
