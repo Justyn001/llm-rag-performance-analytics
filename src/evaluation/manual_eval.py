@@ -312,7 +312,10 @@ def agreement_report(store: EvaluationStore, run_id: str) -> dict[str, Any]:
             "cohen_kappa": cohen_kappa(pairs),
         }
 
-    record_map = {str(record["question_id"]): record for record in store.get_records(run_id)}
+    record_map = {
+        str(record["question_id"]): record
+        for record in store.get_records(run_id, repetition=1)
+    }
     rated_ids = set(by_question)
     answerable_count = sum(
         1 for question_id in rated_ids if record_map.get(question_id, {}).get("answerable")
@@ -411,7 +414,9 @@ def main(argv: list[str] | None = None) -> int:
             if args.sample_size < 1:
                 parser.error("--sample-size must be at least 1")
             records = [
-                record for record in store.get_records(args.run_id) if not record.get("error")
+                record
+                for record in store.get_records(args.run_id, repetition=1)
+                if not record.get("error")
             ]
             if not records:
                 print(f"No completed records for run {args.run_id!r}", file=sys.stderr)

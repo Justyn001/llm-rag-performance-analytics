@@ -8,10 +8,12 @@ from types import SimpleNamespace
 
 import pytest
 
+import src.evaluation.runner as runner_module
 from src.config.models import GEMMA_3_4B
 from src.config.rag_config import BASIC_512
 from src.evaluation.benchmarks import BenchmarkQuestion
 from src.evaluation.judge import JudgeVerdict
+from src.evaluation.protocol import MeasurementProtocol
 from src.evaluation.runner import run_evaluation
 from src.evaluation.storage import EvaluationStore
 
@@ -41,7 +43,12 @@ class FakePipeline:
             context_metadata=[{"document_title": title} for title in titles],
             retrieval_time_ms=1.5,
             generation_time_ms=2.5,
+            retry_backoff_time_ms=0.0,
+            failed_attempt_time_ms=0.0,
+            retry_count=0,
             total_time_ms=4.0,
+            max_tokens=1024,
+            num_ctx=8192,
             tokens_in=12,
             tokens_out=3,
             tokens_per_second=1.2,
@@ -66,6 +73,18 @@ class BrokenJudge:
 
     def evaluate(self, **kwargs):
         raise RuntimeError("judge unavailable")
+
+
+@pytest.fixture(autouse=True)
+def _offline_model_metadata(monkeypatch):
+    """Keep metadata collection deterministic in tests (no Ollama probe)."""
+    monkeypatch.setattr(runner_module, "_ollama_model_details", lambda _model_id: None)
+
+
+@pytest.fixture()
+def single_pass() -> MeasurementProtocol:
+    """P0.4-compatible protocol: no warm-up, one measured pass."""
+    return MeasurementProtocol(warmup_runs=0, repetitions=1)
 
 
 @pytest.fixture()
@@ -103,7 +122,7 @@ def benchmark_path(tmp_path: Path) -> Path:
     return path
 
 
-def test_runner_records_metrics_and_summary(tmp_path, benchmark_path):
+def test_runner_records_metrics_and_summary(tmp_path, benchmark_path, single_pass):
     with EvaluationStore(tmp_path) as store:
         result = run_evaluation(
             benchmark_path=benchmark_path,
@@ -114,6 +133,7 @@ def test_runner_records_metrics_and_summary(tmp_path, benchmark_path):
             output_dir=tmp_path,
             pipeline=FakePipeline(),
             store=store,
+            protocol=single_pass,
         )
 
         records = store.get_records("run-1")
@@ -138,7 +158,7 @@ def test_runner_records_metrics_and_summary(tmp_path, benchmark_path):
     assert summary["run_id"] == "run-1"
 
 
-def test_runner_keeps_going_after_pipeline_error(tmp_path, benchmark_path):
+def test_runner_keeps_going_after_pipeline_error(tmp_path, benchmark_path, single_pass):
     with EvaluationStore(tmp_path) as store:
         result = run_evaluation(
             benchmark_path=benchmark_path,
@@ -149,6 +169,7 @@ def test_runner_keeps_going_after_pipeline_error(tmp_path, benchmark_path):
             output_dir=tmp_path,
             pipeline=FakePipeline(fail_on="capital"),
             store=store,
+            protocol=single_pass,
         )
 
         records = store.get_records("run-error")
@@ -160,7 +181,9 @@ def test_runner_keeps_going_after_pipeline_error(tmp_path, benchmark_path):
         assert result.summary["completed"] == 1
 
 
-def test_runner_records_judge_error_without_losing_answer(tmp_path, benchmark_path):
+def test_runner_records_judge_error_without_losing_answer(
+    tmp_path, benchmark_path, single_pass
+):
     with EvaluationStore(tmp_path) as store:
         result = run_evaluation(
             benchmark_path=benchmark_path,
@@ -171,6 +194,7 @@ def test_runner_records_judge_error_without_losing_answer(tmp_path, benchmark_pa
             output_dir=tmp_path,
             pipeline=FakePipeline(),
             store=store,
+            protocol=single_pass,
         )
 
         records = store.get_records("run-judge-error")
@@ -179,7 +203,7 @@ def test_runner_records_judge_error_without_losing_answer(tmp_path, benchmark_pa
         assert result.summary["judge_errors"] == 2
 
 
-def test_runner_limit_and_no_judge(tmp_path, benchmark_path):
+def test_runner_limit_and_no_judge(tmp_path, benchmark_path, single_pass):
     with EvaluationStore(tmp_path) as store:
         result = run_evaluation(
             benchmark_path=benchmark_path,
@@ -191,6 +215,7 @@ def test_runner_limit_and_no_judge(tmp_path, benchmark_path):
             output_dir=tmp_path,
             pipeline=FakePipeline(),
             store=store,
+            protocol=single_pass,
         )
 
         if len(result.records) != 1:
@@ -201,7 +226,7 @@ def test_runner_limit_and_no_judge(tmp_path, benchmark_path):
         assert result.summary["judge_errors"] == 0
 
 
-def test_runner_owns_and_closes_its_store(tmp_path, benchmark_path):
+def test_runner_owns_and_closes_its_store(tmp_path, benchmark_path, single_pass):
     result = run_evaluation(
         benchmark_path=benchmark_path,
         model_config=GEMMA_3_4B,
@@ -211,6 +236,7 @@ def test_runner_owns_and_closes_its_store(tmp_path, benchmark_path):
         run_id="run-owned",
         output_dir=tmp_path,
         pipeline=FakePipeline(),
+        protocol=single_pass,
     )
 
     assert result.jsonl_path.exists()
@@ -218,3 +244,68 @@ def test_runner_owns_and_closes_its_store(tmp_path, benchmark_path):
     assert result.summary_path.exists()
     with EvaluationStore(tmp_path) as store:
         assert [record["question_id"] for record in store.get_records("run-owned")] == ["q-1"]
+
+
+def test_runner_runs_warmup_then_repeated_sequential_passes(tmp_path, benchmark_path):
+    pipeline = FakePipeline()
+    protocol = MeasurementProtocol(warmup_runs=2, repetitions=3)
+
+    with EvaluationStore(tmp_path) as store:
+        result = run_evaluation(
+            benchmark_path=benchmark_path,
+            model_config=GEMMA_3_4B,
+            rag_config=BASIC_512,
+            judge=None,
+            limit=2,
+            run_id="run-repeated",
+            output_dir=tmp_path,
+            pipeline=pipeline,
+            store=store,
+            protocol=protocol,
+        )
+
+        records = store.get_records("run-repeated")
+        assert len(records) == 6
+        assert [record["repetition"] for record in records] == [1, 1, 2, 2, 3, 3]
+        assert [record["question_id"] for record in records] == [
+            "q-1",
+            "q-2",
+            "q-1",
+            "q-2",
+            "q-1",
+            "q-2",
+        ]
+
+        # Two discarded warm-ups, then three full measured passes.
+        assert pipeline.calls == [
+            "What is the capital of France?",
+            "Who is the current king of France?",
+            "What is the capital of France?",
+            "Who is the current king of France?",
+            "What is the capital of France?",
+            "Who is the current king of France?",
+            "What is the capital of France?",
+            "Who is the current king of France?",
+        ]
+
+        run = store.get_run("run-repeated")
+        assert run is not None
+        metadata = run["metadata"]
+        assert metadata["protocol"]["warmup_runs"] == 2
+        assert metadata["protocol"]["repetitions"] == 3
+        assert metadata["protocol"]["execution_mode"] == "sequential"
+        assert metadata["warmup"]["count"] == 2
+        assert metadata["max_tokens"] == 1024
+        assert metadata["num_ctx_effective"] == 8192
+        assert metadata["model_quantization"] == "Q4_K_M"
+
+        assert result.summary["unique_questions"] == 2
+        assert result.summary["repetitions"] == 3
+        assert result.summary["warmup_runs"] == 2
+        assert result.summary["warmup"]["count"] == 2
+        assert result.summary["performance"]["generation_time_ms"]["n"] == 6
+        assert result.summary["performance"]["generation_time_ms"]["mean"] == 2.5
+        assert result.summary["performance"]["generation_time_ms"]["stdev"] == 0.0
+        assert len(result.summary["repetition_statistics"]) == 3
+        assert len(result.summary["question_statistics"]) == 2
+        assert result.summary["repetition_statistics"][0]["quality"]["exact_match"] == 1.0

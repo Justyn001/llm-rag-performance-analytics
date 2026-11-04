@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from langchain_core.embeddings import Embeddings
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.config.models import ModelConfig
+from src.config.models import ModelConfig, ModelProvider
 from src.config.rag_config import DEFAULT_RAG_CONFIG, RAGConfig
 from src.rag.llm_provider import get_llm
 from src.rag.prompts import get_prompts
@@ -38,11 +38,16 @@ class RAGResponse:
     context_metadata: list[dict]  # Metadata of retrieved chunks
     language: str = "en"
     retrieval_time_ms: float = 0.0  # How long retrieval took
-    generation_time_ms: float = 0.0  # How long LLM generation took
-    total_time_ms: float = 0.0  # Total end-to-end time
+    generation_time_ms: float = 0.0  # Successful LLM call only (no retries)
+    retry_backoff_time_ms: float = 0.0  # Time spent sleeping between retries
+    failed_attempt_time_ms: float = 0.0  # Time spent in failed LLM attempts
+    retry_count: int = 0  # Number of retries before a successful call
+    total_time_ms: float = 0.0  # Total end-to-end time, including retries
     top_k: int = 5
     rag_config: str = ""  # Name of the RAG config used
     dataset: str = ""  # Name of the dataset used
+    max_tokens: int = 0  # Effective output limit used for this call
+    num_ctx: int | None = None  # Effective Ollama context window (cloud: None)
     tokens_in: int = 0  # Input tokens (prompt)
     tokens_out: int = 0  # Output tokens (completion)
     tokens_per_second: float = 0.0  # Generation speed (tokens_out / gen_time_s)
@@ -71,20 +76,29 @@ class RAGPipeline:
         language: str = "en",
         rag_config: RAGConfig = DEFAULT_RAG_CONFIG,
         dataset: str = "wiki",
+        *,
+        max_tokens: int | None = None,
+        num_ctx: int | None = None,
     ):
         self.model_config = model_config
         self.language = language
         self.rag_config = rag_config
         self.dataset = dataset
+        self.max_tokens = max_tokens if max_tokens is not None else model_config.max_tokens
+        # Context length is only controllable on Ollama.  Cloud providers use
+        # their own server-side context handling, so record None instead of
+        # pretending the requested value was applied.
+        self.num_ctx = num_ctx if model_config.provider == ModelProvider.OLLAMA else None
 
         # Initialize components
-        self.llm = get_llm(model_config)
+        self.llm = get_llm(model_config, max_tokens=self.max_tokens, num_ctx=self.num_ctx)
         self.retriever = Retriever(embeddings, dataset=dataset, rag_config=rag_config)
         self.system_prompt, self.user_prompt_template = get_prompts(language)
 
         logger.info(
             f"RAG Pipeline ready: model={model_config.name}, "
-            f"lang={language}, rag={rag_config.name}, dataset={dataset}"
+            f"lang={language}, rag={rag_config.name}, dataset={dataset}, "
+            f"max_tokens={self.max_tokens}, num_ctx={self.num_ctx}"
         )
 
     def ask(
@@ -121,8 +135,6 @@ class RAGPipeline:
         context_text = "\n\n---\n\n".join(contexts)
 
         # ---- Step 2: Generate answer with LLM ----
-        generation_start = time.perf_counter()
-
         user_prompt = user_prompt_template.format(
             context=context_text,
             question=question,
@@ -133,17 +145,31 @@ class RAGPipeline:
             HumanMessage(content=user_prompt),
         ]
 
-        # Retry with backoff for rate limits (429)
+        # Retry with backoff for rate limits (429).  Only the successful LLM
+        # call contributes to generation_time_ms; failed attempts and sleeps
+        # are recorded separately so throughput is not polluted by retries.
         max_retries = 3
         response = None
+        generation_time = 0.0
+        failed_attempt_time = 0.0
+        retry_backoff_time = 0.0
+        retry_count = 0
         for attempt in range(max_retries + 1):
+            attempt_start = time.perf_counter()
             try:
                 response = self.llm.invoke(messages)
+                generation_time = (time.perf_counter() - attempt_start) * 1000
+                retry_count = attempt
                 break
             except Exception as exc:
+                failed_attempt_time += (time.perf_counter() - attempt_start) * 1000
                 exc_str = str(exc)
+                exc_lower = exc_str.lower()
                 is_rate_limit = (
-                    "429" in exc_str or "rate" in exc_str.lower() or "Rate limit" in exc_str
+                    "429" in exc_str
+                    or "rate limit" in exc_lower
+                    or "ratelimit" in exc_lower
+                    or "too many requests" in exc_lower
                 )
                 if is_rate_limit and attempt < max_retries:
                     wait = 2 ** (attempt + 1)
@@ -152,10 +178,9 @@ class RAGPipeline:
                         f"{max_retries}), retrying in {wait}s..."
                     )
                     time.sleep(wait)
+                    retry_backoff_time += wait * 1000
                 else:
                     raise
-
-        generation_time = (time.perf_counter() - generation_start) * 1000
 
         total_time = (time.perf_counter() - total_start) * 1000
 
@@ -203,10 +228,15 @@ class RAGPipeline:
             language=lang,
             retrieval_time_ms=round(retrieval_time, 1),
             generation_time_ms=round(generation_time, 1),
+            retry_backoff_time_ms=round(retry_backoff_time, 1),
+            failed_attempt_time_ms=round(failed_attempt_time, 1),
+            retry_count=retry_count,
             total_time_ms=round(total_time, 1),
             top_k=top_k,
             rag_config=self.rag_config.name,
             dataset=self.dataset,
+            max_tokens=self.max_tokens,
+            num_ctx=self.num_ctx,
             tokens_in=tokens_in,
             tokens_out=tokens_out,
             tokens_per_second=tokens_per_second,
@@ -217,6 +247,7 @@ class RAGPipeline:
             f"Q: '{question[:60]}...' → "
             f"retrieval={retrieval_time:.0f}ms, "
             f"generation={generation_time:.0f}ms, "
+            f"retries={retry_count} (+{retry_backoff_time:.0f}ms backoff), "
             f"total={total_time:.0f}ms, "
             f"tokens={tokens_in}→{tokens_out} ({tokens_per_second} tok/s)"
         )
@@ -230,11 +261,16 @@ def create_pipeline(
     language: str = "en",
     rag_config: RAGConfig = DEFAULT_RAG_CONFIG,
     dataset: str = "wiki",
+    *,
+    max_tokens: int | None = None,
+    num_ctx: int | None = None,
 ) -> RAGPipeline:
     """
     Convenience function to create a RAG pipeline.
 
     If embeddings are not provided, uses default local embeddings.
+    ``max_tokens`` and ``num_ctx`` let the measurement runner apply a common
+    protocol across models instead of the per-model defaults.
     """
     if embeddings is None:
         from src.data.embeddings import EmbeddingProvider, get_embedding_model
@@ -247,6 +283,8 @@ def create_pipeline(
         language=language,
         rag_config=rag_config,
         dataset=dataset,
+        max_tokens=max_tokens,
+        num_ctx=num_ctx,
     )
 
 

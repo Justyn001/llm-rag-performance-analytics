@@ -1,7 +1,7 @@
 # Ewaluacja — automatyczna, sędzia LLM i ocena ręczna
 
-Ten dokument opisuje warstwę ewaluacji dodaną w P0.4. Jej zadaniem jest
-odpowiedzieć na trzy różne pytania:
+Ten dokument opisuje warstwę ewaluacji z P0.4 oraz protokół pomiarowy z P0.5.
+Jej zadaniem jest odpowiedzieć na trzy różne pytania:
 
 1. **Czy odpowiedź jest poprawna?** — exact match, F1, sędzia LLM, ocena ręczna.
 2. **Czy odpowiedź jest wierna kontekstowi?** — sędzia LLM i ocena ręczna.
@@ -120,6 +120,25 @@ uv run python -m src.evaluation.run_eval \
 pytania benchmarku. Dla pierwszego uruchomienia warto użyć małego limitu, żeby
 sprawdzić, czy Ollama, Qdrant i embeddingi działają.
 
+Protokół pomiarowy można nadpisać jawnie:
+
+```bash
+uv run python -m src.evaluation.run_eval \
+  --benchmark squad \
+  --models "Gemma 3 4B" \
+  --rag-config basic-512 \
+  --judge-model "Gemma 3 4B" \
+  --warmup 2 \
+  --repetitions 3 \
+  --max-tokens 1024 \
+  --num-ctx 8192 \
+  --confidence-level 0.95
+```
+
+Wartości domyślne są takie same jak powyższe. `--repetitions 1 --warmup 0`
+przywraca pojedynczy przebieg wygodny do smoke testu, ale nie daje podstaw do
+estymacji wariancji.
+
 ### 2.3. Wiele modeli i konfiguracji RAG
 
 ```bash
@@ -151,6 +170,53 @@ uv run python -m src.evaluation.run_eval \
 Zostaną zapisane EM/F1, detekcja odmowy i diagnostyka retrievera, bez kosztu
 wywołań sędziego.
 
+### 2.5. Protokół pomiarowy P0.5
+
+Protokół jest zdefiniowany w `src/evaluation/protocol.py` i zapisywany w
+metadanych każdego runu. Domyślne wartości:
+
+| Parametr | Domyślnie | Znaczenie |
+|---|---:|---|
+| `warmup_runs` | 2 | liczba odrzucanych żądań rozgrzewających |
+| `repetitions` | 3 | liczba mierzonych, sekwencyjnych przebiegów |
+| `max_tokens` | 1024 | wspólny limit wyjścia dla wszystkich modeli |
+| `num_ctx` | 8192 | wspólny kontekst Ollamy (chmura: zarządzany przez dostawcę) |
+| `confidence_level` | 0.95 | poziom ufności przedziałów |
+| `execution_mode` | `sequential` | brak równoległości i współdzielenia GPU/API |
+
+Przebieg jest zawsze sekwencyjny:
+
+1. `warmup_runs` pierwszych pytań benchmarku jest wykonywanych i **odrzucanych**
+   (nie trafiają do metryk jakości ani do plików wynikowych). Ich czasy trafiają
+   tylko do podsumowania `warmup` w metadanych.
+2. Następnie wykonywane jest `repetitions` pełnych przejść po benchmarku.
+   Każdy rekord ma numer `repetition` (1..N), więc surowe dane pozwalają
+   odtworzyć zarówno wynik zbiorczy, jak i stabilność między powtórzeniami.
+
+`max_tokens` z protokołu nadpisuje per-modelowe wartości z
+`src/config/models.py`. Dzięki temu Qwen 3 8B i Groq Qwen 3.8 nie dostają
+większego limitu niż pozostałe modele. `num_ctx` jest przekazywany do
+`ChatOllama`; dostawcy chmurowi nie mają wspólnego parametru kontekstu, więc
+metadata rozróżnia `num_ctx` (żądany), `num_ctx_supported` i
+`num_ctx_effective` (`null` dla chmury).
+
+Jeśli włączony jest sędzia LLM, ocenia on **każde** powtórzenie. Dla dużego
+kampanijnego runu oznacza to `repetitions × liczba pytań` wywołań sędziego;
+`--no-judge` lub `--repetitions 1` zmniejszają ten koszt.
+
+### 2.6. Czas generacji a retry
+
+`generation_time_ms` obejmuje **tylko udaną próbę wywołania modelu**. Osobno
+zapisywane są:
+
+- `retry_count` — liczba ponowień przed sukcesem,
+- `failed_attempt_time_ms` — czas prób zakończonych błędem,
+- `retry_backoff_time_ms` — czas spania między próbami.
+
+`total_time_ms` nadal jest czasem end-to-end i obejmuje retry. Dzięki temu
+`tokens_per_second` i średni czas generacji nie są zaniżane przez oczekiwanie
+na limity API. Surowe rekordy zachowują wszystkie cztery wartości.
+
 ## 3. Gdzie trafiają wyniki
 
 Domyślnie wszystko ląduje w `data/evaluation/` (katalog jest ignorowany przez
@@ -172,15 +238,25 @@ data/evaluation/
 
 ### 3.1. JSONL
 
-Jedna linia = jedno pytanie. To jest źródło prawdy: zawiera odpowiedź,
-konteksty, metryki, werdykt sędziego i błąd (jeśli wystąpił). Przykładowe pola:
+Jedna linia = jedno pytanie w jednym powtórzeniu. To jest źródło prawdy:
+zawiera odpowiedź, konteksty, metryki, werdykt sędziego i błąd (jeśli
+wystąpił). Przykładowe pola:
 
 ```json
 {
   "run_id": "20260501T120000Z_gemma-3-4b-basic-512_ab12",
   "question_id": "wiki-001",
+  "repetition": 2,
   "answerable": true,
   "answer": "13 million",
+  "retrieval_time_ms": 41.2,
+  "generation_time_ms": 812.4,
+  "retry_count": 0,
+  "failed_attempt_time_ms": 0.0,
+  "retry_backoff_time_ms": 0.0,
+  "total_time_ms": 861.7,
+  "max_tokens": 1024,
+  "num_ctx": 8192,
   "exact_match": 1.0,
   "f1": 1.0,
   "is_refusal": false,
@@ -213,9 +289,14 @@ Plik `evaluation.sqlite` ma trzy tabele:
 - `runs` — metadane runu: benchmark, dataset, model, provider, RAG config,
   top-k, język, model sędziego i pełny `metadata_json` (wersje pakietów,
   commit git, GPU, platforma),
-- `results` — jeden wiersz na pytanie, z metrykami i `raw_json`,
+- `results` — jeden wiersz na pytanie × powtórzenie, z metrykami i `raw_json`;
+  klucz to `(run_id, repetition, question_id)`,
 - `human_ratings` — oceny ręczne: `(run_id, question_id, rater_id)` jest
   kluczem, więc ponowny import aktualizuje ocenę zamiast ją dublować.
+
+Otwarcie starej bazy z P0.4 automatycznie migruje tabelę `results` do schematu
+z kolumną `repetition` i polami retry (istniejące wiersze dostają
+`repetition = 1`). Migracja nie usuwa danych.
 
 Przykładowe zapytanie:
 
@@ -226,7 +307,19 @@ sqlite3 data/evaluation/evaluation.sqlite \
 
 ### 3.4. Summary
 
-`<run_id>_summary.json` zawiera zagregowane średnie i liczby błędów. Summary
+`<run_id>_summary.json` zawiera zagregowane metryki jakości, liczby błędów oraz
+statystyki wydajności. Dla każdego pola z `PERFORMANCE_FIELDS` (retrieval,
+generation, total, tokens_out, tokens_per_second, retry_backoff) zapisany jest
+blok `performance` z polami `n`, `mean`, `median`, `stdev`, `min`, `max`,
+`ci_low`, `ci_high`. Obok niego są:
+
+- `question_statistics` — statystyki per pytanie (po wszystkich powtórzeniach),
+- `repetition_statistics` — jakość i wydajność per przebieg,
+- `warmup` — liczność i czasy odrzuconych żądań rozgrzewających,
+- starsze płaskie klucze `mean_*` — zachowane dla kompatybilności.
+
+Przedziały ufności używają przybliżenia normalnego
+`mean ± z * s / sqrt(n)`. Dla `n < 2` przedział nie jest raportowany. Summary
 jest wygodne do szybkiego raportu, ale **nie zastępuje** JSONL — zawsze można
 odtworzyć agregaty z surowych rekordów.
 
@@ -310,21 +403,45 @@ uv run python -m src.evaluation.manual_eval \
 
 Runner zapisuje w `runs.metadata_json`:
 
-- model, provider, `model_id`, parametry i `max_tokens`,
+- model, provider, `model_id`, parametry, `configured_max_tokens` i
+  `model_quantization`,
+- pełny blok `model`: kwantyzacja, źródło jej pochodzenia
+  (`config` / `ollama` / `fallback`), rodzina, rozmiar parametrów i długość
+  kontekstu zgłoszona przez Ollamę (jeśli dostępna),
+- `protocol`: warm-up, powtórzenia, `max_tokens`, `num_ctx`, poziom ufności i
+  tryb sekwencyjny,
+- `max_tokens`, `num_ctx`, `num_ctx_supported`, `num_ctx_effective`,
 - RAG config, chunk size, overlap, reranking, `top_k`, język,
 - benchmark, dataset, liczbę pytań i limit,
 - model sędziego,
-- wersję Pythona, platformę, liczbę CPU, GPU,
+- wersję Pythona, platformę, nazwę CPU, liczbę rdzeni, RAM, nazwę GPU, VRAM i
+  wersję sterownika,
 - commit git i informację, czy working tree był brudny,
 - wersje kluczowych pakietów (`langchain`, `qdrant-client`,
-  `sentence-transformers`, `torch`, `ragas` itd.).
+  `sentence-transformers`, `torch`, `datasets`, `ragas` itd.).
 
-To jest fundament pod P0.5. P0.4 **nie** implementuje jeszcze warm-upu,
-powtórzeń, sekwencyjnego protokołu pomiarowego ani wyłączania czasu retry z
-metryki generacji — te elementy są osobnym zadaniem P0.5. W szczególności
-`generation_time_ms` w P0.4 pochodzi z pipeline'u i może zawierać czas
-oczekiwania na retry przy limitach API; nie należy go jeszcze traktować jako
-docelowej miary wydajności modelu.
+Kwantyzacja modeli lokalnych jest najpierw odczytywana z działającej Ollamy
+(`/api/show`, pole `quantization_level`), a `ModelConfig.quantization` jest
+wartością zapasową. Dla modeli chmurowych zapisywane jest
+`provider-managed`, bo dostawcy nie ujawniają wagi ani kwantyzacji.
+
+## 5.1. Ograniczenia protokołu
+
+- Warm-up odbywa się raz na początku runu, a nie przed każdym powtórzeniem.
+  Kolejne przebiegi mogą więc podlegać dryfowi termicznemu lub zmianom
+  obciążenia API; `repetition_statistics` pozwala ten dryf zobaczyć.
+- `num_ctx` jest w pełni kontrolowany tylko dla Ollamy. Dla Groq, Google i
+  Mistrala kontekst jest zarządzany przez dostawcę i nie jest stałym parametrem
+  porównawczym.
+- Kwantyzacja modeli chmurowych nie jest znana. Porównanie lokalne vs chmura
+  dotyczy zatem całego stosu (wagi + kwantyzacja + infrastruktura), a nie
+  wyłącznie rozmiaru modelu.
+- Przedziały ufności są przybliżeniem normalnym. Przy trzech powtórzeniach
+  należy je traktować jako orientacyjne, a w pracy podać `n` i odchylenie
+  standardowe.
+- Retry są nadal ponawiane wewnątrz pipeline'u. `generation_time_ms` jest
+  wolny od backoffu, ale `total_time_ms` pokazuje rzeczywisty koszt
+  end-to-end.
 
 ## 6. Ograniczenia
 
@@ -339,6 +456,9 @@ docelowej miary wydajności modelu.
   benchmarki wymagają osobnego zbioru.
 - Surowe wyniki są ignorowane przez git. Do repozytorium trafia kod i
   dokumentacja, nie wynik jednego runu.
+- Powtórzenia tego samego pytania nie są w pełni niezależne: dzielą ten sam
+  kontekst, model i sesję. Służą do estymacji wariancji pomiaru, a nie do
+  traktowania odpowiedzi jak niezależnych próbek z populacji.
 
 ## 7. Szybka weryfikacja
 
@@ -349,7 +469,8 @@ uv run python -m src.evaluation.benchmarks --validate
 # testy jednostkowe warstwy ewaluacji
 uv run pytest tests/test_metrics.py tests/test_judge.py \
   tests/test_evaluation_store.py tests/test_eval_runner.py \
-  tests/test_manual_eval.py -q
+  tests/test_manual_eval.py tests/test_measurement_protocol.py \
+  tests/test_rag.py -q
 
 # lista benchmarków i rubryka (bez modeli)
 uv run python -m src.evaluation.run_eval --list-benchmarks

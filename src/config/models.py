@@ -36,6 +36,7 @@ class ModelConfig:
         parameters: int | None = None,
         temperature: float = 0.0,
         max_tokens: int = 1024,
+        quantization: str | None = None,
     ):
         self.name = name
         self.provider = provider
@@ -45,6 +46,10 @@ class ModelConfig:
         self.parameters = parameters
         self.temperature = temperature
         self.max_tokens = max_tokens
+        # Local models are usually GGUF builds with a known Ollama quantisation
+        # tag.  Cloud providers do not expose the deployed weights, so their
+        # value is recorded as "provider-managed" in run metadata.
+        self.quantization = quantization
 
     def __repr__(self) -> str:
         location = "local" if self.is_local else "cloud"
@@ -62,6 +67,7 @@ GEMMA_3_4B = ModelConfig(
     description="Google Gemma 3 — newest, lightweight 4B",
     is_local=True,
     parameters=4_000_000_000,
+    quantization="Q4_K_M",
 )
 
 QWEN_3_8B = ModelConfig(
@@ -72,6 +78,7 @@ QWEN_3_8B = ModelConfig(
     is_local=True,
     parameters=8_000_000_000,
     max_tokens=2048,
+    quantization="Q4_K_M",
 )
 
 MISTRAL_NEMO = ModelConfig(
@@ -81,6 +88,7 @@ MISTRAL_NEMO = ModelConfig(
     description="Mistral AI + NVIDIA — 12B, 128k context",
     is_local=True,
     parameters=12_000_000_000,
+    quantization="Q4_0",
 )
 
 LLAMA_4_SCOUT = ModelConfig(
@@ -90,6 +98,7 @@ LLAMA_4_SCOUT = ModelConfig(
     description="Meta Llama 4 Scout — 17B active MoE (109B total)",
     is_local=True,
     parameters=109_000_000_000,
+    quantization="Q4_K_M",
 )
 
 # =============================================================================
@@ -102,6 +111,7 @@ GEMINI_2_5_FLASH = ModelConfig(
     model_id="gemini-2.5-flash",
     description="Google Gemini 2.5 Flash — free tier, latest",
     is_local=False,
+    quantization="provider-managed",
 )
 
 GROQ_GPT_OSS_20B = ModelConfig(
@@ -110,6 +120,7 @@ GROQ_GPT_OSS_20B = ModelConfig(
     model_id="openai/gpt-oss-20b",
     description="OpenAI GPT-OSS 20B on Groq — free, smaller open-source",
     is_local=False,
+    quantization="provider-managed",
 )
 
 GROQ_QWEN_3_8 = ModelConfig(
@@ -119,6 +130,7 @@ GROQ_QWEN_3_8 = ModelConfig(
     description="Qwen 3.8 27B on Groq — free, newest Qwen",
     is_local=False,
     max_tokens=2048,
+    quantization="provider-managed",
 )
 
 GROQ_GPT_OSS_120B = ModelConfig(
@@ -127,6 +139,7 @@ GROQ_GPT_OSS_120B = ModelConfig(
     model_id="openai/gpt-oss-120b",
     description="OpenAI GPT-OSS 120B on Groq — free, large open-source",
     is_local=False,
+    quantization="provider-managed",
 )
 
 # =============================================================================

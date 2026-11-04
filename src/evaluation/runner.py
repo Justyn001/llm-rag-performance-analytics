@@ -24,7 +24,7 @@ from typing import Any
 
 from langchain_core.embeddings import Embeddings
 
-from src.config.models import ModelConfig
+from src.config.models import ModelConfig, ModelProvider
 from src.config.rag_config import RAGConfig
 from src.evaluation.benchmarks import BenchmarkQuestion, load_benchmark
 from src.evaluation.judge import JudgeVerdict
@@ -32,7 +32,10 @@ from src.evaluation.metrics import (
     compute_answer_metrics,
     compute_retrieval_metrics,
 )
+from src.evaluation.protocol import DEFAULT_PROTOCOL, MeasurementProtocol
+from src.evaluation.stats import flatten_performance, performance_summary
 from src.evaluation.storage import EvaluationStore
+from src.rag.llm_provider import supports_num_ctx
 
 DEFAULT_OUTPUT_DIR = Path("data/evaluation")
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -88,23 +91,58 @@ def _git_value(*args: str) -> str | None:
     return result.stdout.strip() or None
 
 
-def _gpu_name() -> str | None:
+def _gpu_details() -> dict[str, Any]:
     if shutil.which("nvidia-smi") is None:
-        return None
+        return {}
     try:
         result = subprocess.run(
-            ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+            [
+                "nvidia-smi",
+                "--query-gpu=name,memory.total,driver_version",
+                "--format=csv,noheader,nounits",
+            ],
             capture_output=True,
             text=True,
             check=False,
             timeout=10,
         )
     except (OSError, subprocess.TimeoutExpired):
-        return None
+        return {}
     if result.returncode != 0:
-        return None
+        return {}
     first_line = result.stdout.strip().splitlines()
-    return first_line[0].strip() if first_line else None
+    if not first_line:
+        return {}
+    parts = [part.strip() for part in first_line[0].split(",")]
+    details: dict[str, Any] = {"name": parts[0] or None}
+    if len(parts) > 1:
+        try:
+            details["memory_mb"] = int(float(parts[1]))
+        except ValueError:
+            details["memory_mb"] = None
+    if len(parts) > 2:
+        details["driver"] = parts[2] or None
+    return details
+
+
+def _cpu_name() -> str | None:
+    if platform.system() == "Linux":
+        try:
+            for line in Path("/proc/cpuinfo").read_text(encoding="utf-8").splitlines():
+                if line.lower().startswith("model name"):
+                    return line.split(":", 1)[1].strip()
+        except OSError:
+            pass
+    return platform.processor() or None
+
+
+def _ram_gb() -> float | None:
+    try:
+        page_size = os.sysconf("SC_PAGE_SIZE")
+        pages = os.sysconf("SC_PHYS_PAGES")
+    except (AttributeError, OSError, ValueError):
+        return None
+    return round(page_size * pages / (1024**3), 1)
 
 
 def collect_environment_metadata() -> dict[str, Any]:
@@ -119,23 +157,86 @@ def collect_environment_metadata() -> dict[str, Any]:
             "langchain-groq",
             "langchain-google-genai",
             "langchain-mistralai",
+            "langchain-qdrant",
             "qdrant-client",
             "sentence-transformers",
             "torch",
+            "datasets",
             "ragas",
             "pydantic",
         )
     }
+    gpu = _gpu_details()
     return {
         "python": platform.python_version(),
         "platform": platform.platform(),
         "machine": platform.machine(),
+        "cpu": _cpu_name(),
         "cpu_count": os.cpu_count(),
-        "gpu": _gpu_name(),
+        "ram_gb": _ram_gb(),
+        "gpu": gpu.get("name"),
+        "gpu_memory_mb": gpu.get("memory_mb"),
+        "gpu_driver": gpu.get("driver"),
         "git_commit": _git_value("rev-parse", "HEAD"),
         "git_dirty": bool(_git_value("status", "--porcelain")),
         "packages": packages,
     }
+
+
+def _ollama_model_details(model_id: str) -> dict[str, Any] | None:
+    """Read model details from a running Ollama server, if available."""
+    try:
+        import httpx
+
+        from src.config.settings import get_settings
+
+        settings = get_settings()
+        response = httpx.post(
+            f"{settings.ollama_host}/api/show",
+            json={"model": model_id},
+            timeout=3.0,
+        )
+        if response.status_code != 200:
+            return None
+        payload = response.json()
+    except Exception:  # noqa: BLE001 - metadata collection must never break a run
+        return None
+    details = payload.get("details")
+    return details if isinstance(details, dict) else None
+
+
+def collect_model_metadata(model_config: ModelConfig) -> dict[str, Any]:
+    """Collect model identity, provider and quantisation information."""
+    detected = (
+        _ollama_model_details(model_config.model_id)
+        if model_config.provider == ModelProvider.OLLAMA
+        else None
+    )
+    quantization = model_config.quantization
+    quantization_source = "config" if quantization else None
+    if detected and detected.get("quantization_level"):
+        quantization = detected["quantization_level"]
+        quantization_source = "ollama"
+    if not quantization:
+        quantization = "provider-managed" if not model_config.is_local else "unknown"
+        quantization_source = "fallback"
+
+    metadata: dict[str, Any] = {
+        "name": model_config.name,
+        "provider": model_config.provider.value,
+        "model_id": model_config.model_id,
+        "is_local": model_config.is_local,
+        "parameters": model_config.parameters,
+        "temperature": model_config.temperature,
+        "configured_max_tokens": model_config.max_tokens,
+        "quantization": quantization,
+        "quantization_source": quantization_source,
+    }
+    if detected:
+        for key in ("family", "parameter_size", "context_length", "format"):
+            if key in detected:
+                metadata[key] = detected[key]
+    return metadata
 
 
 def _references(question: BenchmarkQuestion) -> list[str]:
@@ -174,11 +275,13 @@ def _empty_record(
     *,
     run_id: str,
     question: BenchmarkQuestion,
+    repetition: int,
     error: str,
 ) -> dict[str, Any]:
     return {
         "run_id": run_id,
         "question_id": question.question_id,
+        "repetition": repetition,
         "dataset": question.dataset,
         "split": question.split,
         "set_type": question.set_type,
@@ -196,7 +299,12 @@ def _empty_record(
         "context_titles": [],
         "retrieval_time_ms": 0.0,
         "generation_time_ms": 0.0,
+        "retry_backoff_time_ms": 0.0,
+        "failed_attempt_time_ms": 0.0,
+        "retry_count": 0,
         "total_time_ms": 0.0,
+        "max_tokens": 0,
+        "num_ctx": None,
         "tokens_in": 0,
         "tokens_out": 0,
         "tokens_per_second": 0.0,
@@ -220,6 +328,7 @@ def _evaluate_one(
     question: BenchmarkQuestion,
     response: Any,
     judge: Any | None,
+    repetition: int,
 ) -> dict[str, Any]:
     contexts = list(getattr(response, "contexts", []) or [])
     context_metadata = list(getattr(response, "context_metadata", []) or [])
@@ -256,6 +365,7 @@ def _evaluate_one(
     return {
         "run_id": run_id,
         "question_id": question.question_id,
+        "repetition": repetition,
         "dataset": question.dataset,
         "split": question.split,
         "set_type": question.set_type,
@@ -273,7 +383,16 @@ def _evaluate_one(
         "context_titles": context_titles,
         "retrieval_time_ms": float(getattr(response, "retrieval_time_ms", 0.0) or 0.0),
         "generation_time_ms": float(getattr(response, "generation_time_ms", 0.0) or 0.0),
+        "retry_backoff_time_ms": float(
+            getattr(response, "retry_backoff_time_ms", 0.0) or 0.0
+        ),
+        "failed_attempt_time_ms": float(
+            getattr(response, "failed_attempt_time_ms", 0.0) or 0.0
+        ),
+        "retry_count": int(getattr(response, "retry_count", 0) or 0),
         "total_time_ms": float(getattr(response, "total_time_ms", 0.0) or 0.0),
+        "max_tokens": int(getattr(response, "max_tokens", 0) or 0),
+        "num_ctx": getattr(response, "num_ctx", None),
         "tokens_in": int(getattr(response, "tokens_in", 0) or 0),
         "tokens_out": int(getattr(response, "tokens_out", 0) or 0),
         "tokens_per_second": float(getattr(response, "tokens_per_second", 0.0) or 0.0),
@@ -345,7 +464,114 @@ def summarize_records(records: list[dict[str, Any]]) -> dict[str, Any]:
         ),
         "mean_total_time_ms": _mean([record.get("total_time_ms") for record in completed]),
         "mean_tokens_per_second": _mean([record.get("tokens_per_second") for record in completed]),
+        "mean_retry_backoff_time_ms": _mean(
+            [record.get("retry_backoff_time_ms") for record in completed]
+        ),
+        "mean_failed_attempt_time_ms": _mean(
+            [record.get("failed_attempt_time_ms") for record in completed]
+        ),
+        "mean_retry_count": _mean([record.get("retry_count") for record in completed]),
     }
+
+
+def _warmup_summary(
+    responses: list[Any],
+    question_ids: list[str],
+    protocol: MeasurementProtocol,
+) -> dict[str, Any]:
+    timing_records = [
+        {
+            "retrieval_time_ms": float(getattr(response, "retrieval_time_ms", 0.0) or 0.0),
+            "generation_time_ms": float(getattr(response, "generation_time_ms", 0.0) or 0.0),
+            "total_time_ms": float(getattr(response, "total_time_ms", 0.0) or 0.0),
+            "tokens_out": int(getattr(response, "tokens_out", 0) or 0),
+            "tokens_per_second": float(
+                getattr(response, "tokens_per_second", 0.0) or 0.0
+            ),
+            "retry_backoff_time_ms": float(
+                getattr(response, "retry_backoff_time_ms", 0.0) or 0.0
+            ),
+        }
+        for response in responses
+    ]
+    return {
+        "count": len(timing_records),
+        "question_ids": list(question_ids),
+        "performance": performance_summary(
+            timing_records,
+            confidence_level=protocol.confidence_level,
+        ),
+    }
+
+
+def _question_statistics(
+    records: list[dict[str, Any]],
+    protocol: MeasurementProtocol,
+) -> list[dict[str, Any]]:
+    order: list[str] = []
+    for record in records:
+        question_id = str(record.get("question_id", ""))
+        if question_id and question_id not in order:
+            order.append(question_id)
+
+    statistics: list[dict[str, Any]] = []
+    for question_id in order:
+        subset = [
+            record for record in records if str(record.get("question_id", "")) == question_id
+        ]
+        completed = [record for record in subset if not record.get("error")]
+        statistics.append(
+            {
+                "question_id": question_id,
+                "answerable": bool(subset[0].get("answerable")) if subset else None,
+                "measurements": len(subset),
+                "completed": len(completed),
+                "errors": len(subset) - len(completed),
+                "performance": performance_summary(
+                    subset,
+                    confidence_level=protocol.confidence_level,
+                ),
+            }
+        )
+    return statistics
+
+
+def _repetition_statistics(
+    records: list[dict[str, Any]],
+    protocol: MeasurementProtocol,
+) -> list[dict[str, Any]]:
+    statistics: list[dict[str, Any]] = []
+    for repetition in range(1, protocol.repetitions + 1):
+        subset = [
+            record
+            for record in records
+            if int(record.get("repetition") or 1) == repetition
+        ]
+        statistics.append(
+            {
+                "repetition": repetition,
+                "quality": summarize_records(subset),
+                "performance": performance_summary(
+                    subset,
+                    confidence_level=protocol.confidence_level,
+                ),
+            }
+        )
+    return statistics
+
+
+def _add_performance_statistics(
+    summary: dict[str, Any],
+    records: list[dict[str, Any]],
+    protocol: MeasurementProtocol,
+) -> None:
+    performance = performance_summary(
+        records,
+        confidence_level=protocol.confidence_level,
+    )
+    summary["confidence_level"] = protocol.confidence_level
+    summary["performance"] = performance
+    summary.update(flatten_performance(performance))
 
 
 def run_evaluation(
@@ -362,9 +588,15 @@ def run_evaluation(
     pipeline: Any | None = None,
     store: EvaluationStore | None = None,
     embeddings: Embeddings | None = None,
+    protocol: MeasurementProtocol = DEFAULT_PROTOCOL,
 ) -> RunResult:
     """
     Run one benchmark through one RAG configuration and persist raw results.
+
+    The run is strictly sequential: first the configured number of discarded
+    warm-up requests, then ``protocol.repetitions`` measured passes over the
+    benchmark.  Every measured pass is stored with its repetition number, so
+    statistics can be recomputed from the raw JSONL/CSV/SQLite records.
 
     ``pipeline`` and ``judge`` are injectable so tests and offline analyses can
     run without Ollama, cloud keys or Qdrant.
@@ -392,31 +624,9 @@ def run_evaluation(
     run_id = run_id or generate_run_id(model_config, rag_config)
     judge_model = getattr(judge, "model_config", None)
     judge_model_name = getattr(judge_model, "name", None)
-
-    metadata = {
-        "run_id": run_id,
-        "created_at": datetime.now(UTC).isoformat(),
-        "benchmark": path.name,
-        "benchmark_path": str(path),
-        "dataset": dataset,
-        "model_name": model_config.name,
-        "model_provider": model_config.provider.value,
-        "model_id": model_config.model_id,
-        "model_is_local": model_config.is_local,
-        "model_parameters": model_config.parameters,
-        "temperature": model_config.temperature,
-        "max_tokens": model_config.max_tokens,
-        "rag_config": rag_config.name,
-        "chunk_size": rag_config.chunk_size,
-        "chunk_overlap": rag_config.chunk_overlap,
-        "use_reranking": rag_config.use_reranking,
-        "top_k": top_k,
-        "language": language,
-        "judge_model": judge_model_name,
-        "question_count": len(questions),
-        "limit": limit,
-        "environment": collect_environment_metadata(),
-    }
+    num_ctx_supported = supports_num_ctx(model_config)
+    effective_num_ctx = protocol.num_ctx if num_ctx_supported else None
+    model_metadata = collect_model_metadata(model_config)
 
     if pipeline is None:
         from src.data.embeddings import EmbeddingProvider, get_embedding_model
@@ -429,45 +639,111 @@ def run_evaluation(
             language=language,
             rag_config=rag_config,
             dataset=dataset,
+            max_tokens=protocol.max_tokens,
+            num_ctx=effective_num_ctx,
         )
 
-    records: list[dict[str, Any]] = []
     try:
-        store.start_run(metadata)
-        for index, question in enumerate(questions, start=1):
-            try:
-                response = pipeline.ask(
+        # Warm-up requests are intentionally discarded: they load the model,
+        # initialise caches and stabilise GPU clocks/API connections.
+        warmup_responses: list[Any] = []
+        warmup_question_ids: list[str] = []
+        for index in range(protocol.warmup_runs):
+            question = questions[index % len(questions)]
+            logger.info(
+                "[%s] warm-up %d/%d %s",
+                run_id,
+                index + 1,
+                protocol.warmup_runs,
+                question.question_id,
+            )
+            warmup_responses.append(
+                pipeline.ask(
                     question.question,
                     top_k=top_k,
                     language=language,
                 )
-                record = _evaluate_one(
-                    run_id=run_id,
-                    question=question,
-                    response=response,
-                    judge=judge,
-                )
-            except Exception as exc:  # noqa: BLE001 - keep the run and the raw error
-                record = _empty_record(
-                    run_id=run_id,
-                    question=question,
-                    error=_short_error(exc),
-                )
-            records.append(record)
-            store.append(record)
-            logger.info(
-                "[%s] %d/%d %s%s",
-                run_id,
-                index,
-                len(questions),
-                question.question_id,
-                " (error)" if record.get("error") else "",
             )
+            warmup_question_ids.append(question.question_id)
+
+        metadata = {
+            "run_id": run_id,
+            "created_at": datetime.now(UTC).isoformat(),
+            "benchmark": path.name,
+            "benchmark_path": str(path),
+            "dataset": dataset,
+            "model_name": model_config.name,
+            "model_provider": model_config.provider.value,
+            "model_id": model_config.model_id,
+            "model_is_local": model_config.is_local,
+            "model_parameters": model_config.parameters,
+            "temperature": model_config.temperature,
+            "max_tokens": protocol.max_tokens,
+            "configured_max_tokens": model_config.max_tokens,
+            "num_ctx": protocol.num_ctx,
+            "num_ctx_supported": num_ctx_supported,
+            "num_ctx_effective": effective_num_ctx,
+            "model_quantization": model_metadata["quantization"],
+            "model": model_metadata,
+            "rag_config": rag_config.name,
+            "chunk_size": rag_config.chunk_size,
+            "chunk_overlap": rag_config.chunk_overlap,
+            "use_reranking": rag_config.use_reranking,
+            "top_k": top_k,
+            "language": language,
+            "judge_model": judge_model_name,
+            "question_count": len(questions),
+            "limit": limit,
+            "protocol": protocol.to_dict(),
+            "planned_measurements": len(questions) * protocol.repetitions,
+            "warmup": _warmup_summary(warmup_responses, warmup_question_ids, protocol),
+            "environment": collect_environment_metadata(),
+        }
+
+        store.start_run(metadata)
+        records: list[dict[str, Any]] = []
+        total = len(questions) * protocol.repetitions
+        completed_count = 0
+        for repetition in range(1, protocol.repetitions + 1):
+            for question in questions:
+                completed_count += 1
+                try:
+                    response = pipeline.ask(
+                        question.question,
+                        top_k=top_k,
+                        language=language,
+                    )
+                    record = _evaluate_one(
+                        run_id=run_id,
+                        question=question,
+                        response=response,
+                        judge=judge,
+                        repetition=repetition,
+                    )
+                except Exception as exc:  # noqa: BLE001 - keep the run and the raw error
+                    record = _empty_record(
+                        run_id=run_id,
+                        question=question,
+                        repetition=repetition,
+                        error=_short_error(exc),
+                    )
+                records.append(record)
+                store.append(record)
+                logger.info(
+                    "[%s] rep=%d %d/%d %s%s",
+                    run_id,
+                    repetition,
+                    completed_count,
+                    total,
+                    question.question_id,
+                    " (error)" if record.get("error") else "",
+                )
     finally:
         if owns_store:
             store.close()
 
     summary = summarize_records(records)
+    _add_performance_statistics(summary, records, protocol)
     summary.update(
         {
             "run_id": run_id,
@@ -479,6 +755,18 @@ def run_evaluation(
             "top_k": top_k,
             "language": language,
             "judge_model": judge_model_name,
+            "unique_questions": len(questions),
+            "repetitions": protocol.repetitions,
+            "warmup_runs": protocol.warmup_runs,
+            "max_tokens": protocol.max_tokens,
+            "num_ctx": protocol.num_ctx,
+            "num_ctx_supported": num_ctx_supported,
+            "num_ctx_effective": effective_num_ctx,
+            "model_quantization": model_metadata["quantization"],
+            "protocol": protocol.to_dict(),
+            "warmup": metadata["warmup"],
+            "question_statistics": _question_statistics(records, protocol),
+            "repetition_statistics": _repetition_statistics(records, protocol),
         }
     )
     summary_path = store.runs_dir / f"{run_id}_summary.json"

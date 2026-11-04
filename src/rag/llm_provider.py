@@ -22,37 +22,62 @@ from src.config.settings import get_settings
 logger = logging.getLogger(__name__)
 
 
-def get_llm(model: ModelConfig) -> BaseChatModel:
+def get_llm(
+    model: ModelConfig,
+    *,
+    max_tokens: int | None = None,
+    num_ctx: int | None = None,
+) -> BaseChatModel:
     """
     Get a LangChain LLM instance for the given model config.
 
     Args:
         model: A ModelConfig from src.config.models (e.g. LLAMA_3_1_8B, GPT_4O_MINI)
+        max_tokens: Protocol-wide output limit; overrides ``model.max_tokens``.
+        num_ctx: Ollama context window. Cloud providers keep their own fixed
+            context handling and ignore this value.
 
     Returns:
         LangChain chat model — same interface regardless of provider
 
     Example:
         from src.config.models import LLAMA_3_1_8B, GPT_4O_MINI
-        local_llm = get_llm(LLAMA_3_1_8B)
-        cloud_llm = get_llm(GPT_4O_MINI)
+        local_llm = get_llm(LLAMA_3_1_8B, max_tokens=1024, num_ctx=8192)
+        cloud_llm = get_llm(GPT_4O_MINI, max_tokens=1024)
     """
-    logger.info(f"Loading LLM: {model.name} (provider={model.provider})")
+    effective_max_tokens = max_tokens if max_tokens is not None else model.max_tokens
+    logger.info(
+        "Loading LLM: %s (provider=%s, max_tokens=%s, num_ctx=%s)",
+        model.name,
+        model.provider,
+        effective_max_tokens,
+        num_ctx,
+    )
 
     if model.provider == ModelProvider.OLLAMA:
-        return _get_ollama_llm(model)
+        return _get_ollama_llm(model, max_tokens=effective_max_tokens, num_ctx=num_ctx)
     if model.provider == ModelProvider.GROQ:
-        return _get_groq_llm(model)
+        return _get_groq_llm(model, max_tokens=effective_max_tokens)
     if model.provider == ModelProvider.GOOGLE:
-        return _get_google_llm(model)
+        return _get_google_llm(model, max_tokens=effective_max_tokens)
     if model.provider == ModelProvider.MISTRAL:
-        return _get_mistral_llm(model)
+        return _get_mistral_llm(model, max_tokens=effective_max_tokens)
 
     msg = f"Unknown provider: {model.provider}"
     raise ValueError(msg)
 
 
-def _get_ollama_llm(model: ModelConfig) -> BaseChatModel:
+def supports_num_ctx(model: ModelConfig) -> bool:
+    """Whether the provider exposes a context-window setting we can control."""
+    return model.provider == ModelProvider.OLLAMA
+
+
+def _get_ollama_llm(
+    model: ModelConfig,
+    *,
+    max_tokens: int,
+    num_ctx: int | None,
+) -> BaseChatModel:
     """
     Local LLM via Ollama (runs on your GPU).
 
@@ -67,11 +92,12 @@ def _get_ollama_llm(model: ModelConfig) -> BaseChatModel:
         model=model.model_id,
         base_url=settings.ollama_host,
         temperature=model.temperature,
-        num_predict=model.max_tokens,
+        num_predict=max_tokens,
+        num_ctx=num_ctx,
     )
 
 
-def _get_groq_llm(model: ModelConfig) -> BaseChatModel:
+def _get_groq_llm(model: ModelConfig, *, max_tokens: int) -> BaseChatModel:
     """Cloud LLM via Groq API (free, ultra-fast inference)."""
     from langchain_groq import ChatGroq
 
@@ -84,12 +110,12 @@ def _get_groq_llm(model: ModelConfig) -> BaseChatModel:
         model=model.model_id,
         api_key=settings.groq_api_key,
         temperature=model.temperature,
-        max_tokens=model.max_tokens,
+        max_tokens=max_tokens,
         reasoning_format="hidden",
     )
 
 
-def _get_google_llm(model: ModelConfig) -> BaseChatModel:
+def _get_google_llm(model: ModelConfig, *, max_tokens: int) -> BaseChatModel:
     """Cloud LLM via Google Gemini API (free tier)."""
     from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -102,11 +128,11 @@ def _get_google_llm(model: ModelConfig) -> BaseChatModel:
         model=model.model_id,
         google_api_key=settings.google_api_key,
         temperature=model.temperature,
-        max_output_tokens=model.max_tokens,
+        max_output_tokens=max_tokens,
     )
 
 
-def _get_mistral_llm(model: ModelConfig) -> BaseChatModel:
+def _get_mistral_llm(model: ModelConfig, *, max_tokens: int) -> BaseChatModel:
     """Cloud LLM via Mistral AI API (free tier)."""
     from langchain_mistralai import ChatMistralAI
 
@@ -119,7 +145,7 @@ def _get_mistral_llm(model: ModelConfig) -> BaseChatModel:
         model=model.model_id,
         api_key=settings.mistral_api_key,
         temperature=model.temperature,
-        max_tokens=model.max_tokens,
+        max_tokens=max_tokens,
     )
 
 

@@ -52,6 +52,9 @@ def test_store_writes_jsonl_csv_and_sqlite(tmp_path):
         rows = list(csv.DictReader(handle))
     assert len(rows) == 2
     assert rows[0]["dataset"] == "wiki"
+    assert rows[0]["repetition"] == "1"
+    assert rows[0]["max_tokens"] == "1024"
+    assert rows[0]["num_ctx"] == "8192"
     assert rows[0]["judge_correct"] == "1"
     assert rows[1]["answerable"] == "False"
 
@@ -116,3 +119,122 @@ def test_store_can_switch_to_a_second_run(tmp_path):
 
         assert [record["question_id"] for record in store.get_records("run-1")] == ["q-1"]
         assert [record["question_id"] for record in store.get_records("run-2")] == ["q-2"]
+
+
+def test_store_accepts_same_question_in_multiple_repetitions(tmp_path):
+    with EvaluationStore(tmp_path) as store:
+        store.start_run(make_metadata("run-1"))
+        store.append(make_record(run_id="run-1", question_id="q-1", repetition=1))
+        store.append(make_record(run_id="run-1", question_id="q-1", repetition=2))
+
+        assert len(store.get_records("run-1")) == 2
+        assert [
+            record["repetition"]
+            for record in store.get_records("run-1", repetition=2)
+        ] == [2]
+
+
+def test_store_migrates_legacy_results_table(tmp_path):
+    db_path = tmp_path / "evaluation.sqlite"
+    legacy_record = make_record(run_id="run-legacy", question_id="q-1")
+    with sqlite3.connect(db_path) as connection:
+        connection.executescript(
+            """
+            CREATE TABLE runs (
+                run_id TEXT PRIMARY KEY,
+                created_at TEXT NOT NULL,
+                benchmark TEXT NOT NULL,
+                dataset TEXT NOT NULL,
+                model_name TEXT NOT NULL,
+                model_provider TEXT NOT NULL,
+                model_id TEXT NOT NULL,
+                rag_config TEXT NOT NULL,
+                top_k INTEGER NOT NULL,
+                language TEXT NOT NULL,
+                judge_model TEXT,
+                metadata_json TEXT NOT NULL
+            );
+            CREATE TABLE results (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                run_id TEXT NOT NULL REFERENCES runs(run_id) ON DELETE CASCADE,
+                question_id TEXT NOT NULL,
+                question TEXT NOT NULL,
+                answerable INTEGER NOT NULL,
+                expected_answer TEXT,
+                gold_context TEXT,
+                gold_span TEXT,
+                gold_title TEXT,
+                answer TEXT NOT NULL,
+                contexts_json TEXT NOT NULL,
+                context_titles_json TEXT NOT NULL,
+                retrieval_time_ms REAL NOT NULL DEFAULT 0,
+                generation_time_ms REAL NOT NULL DEFAULT 0,
+                total_time_ms REAL NOT NULL DEFAULT 0,
+                tokens_in INTEGER NOT NULL DEFAULT 0,
+                tokens_out INTEGER NOT NULL DEFAULT 0,
+                tokens_per_second REAL NOT NULL DEFAULT 0,
+                exact_match REAL,
+                f1 REAL,
+                is_refusal INTEGER NOT NULL,
+                refusal_correct INTEGER,
+                automatic_correct INTEGER,
+                refusal_pattern TEXT,
+                gold_title_rank INTEGER,
+                retrieval_hit INTEGER,
+                gold_span_in_context INTEGER,
+                judge_correct INTEGER,
+                judge_faithful INTEGER,
+                judge_context_relevant INTEGER,
+                judge_refusal_appropriate INTEGER,
+                judge_reason TEXT,
+                judged INTEGER NOT NULL DEFAULT 0,
+                error TEXT,
+                raw_json TEXT NOT NULL,
+                UNIQUE(run_id, question_id)
+            );
+            """
+        )
+        connection.execute(
+            "INSERT INTO runs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                "run-legacy",
+                "2026-01-01T00:00:00+00:00",
+                "test_benchmark.json",
+                "wiki",
+                "Test Model",
+                "ollama",
+                "test:1b",
+                "basic-512",
+                5,
+                "en",
+                "Test Judge",
+                json.dumps(make_metadata("run-legacy")),
+            ),
+        )
+        connection.execute(
+            "INSERT INTO results (run_id, question_id, question, answerable, answer, "
+            "contexts_json, context_titles_json, is_refusal, raw_json) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                "run-legacy",
+                "q-1",
+                legacy_record["question"],
+                1,
+                legacy_record["answer"],
+                "[]",
+                "[]",
+                0,
+                json.dumps(legacy_record),
+            ),
+        )
+
+    with EvaluationStore(tmp_path) as store:
+        records = store.get_records("run-legacy")
+        assert records[0]["question_id"] == "q-1"
+        assert records[0]["repetition"] == 1
+        columns = {
+            row["name"]
+            for row in store._conn.execute("PRAGMA table_info(results)").fetchall()
+        }
+        assert {"repetition", "retry_count", "max_tokens", "num_ctx"} <= columns
+        assert store.get_records("run-legacy", repetition=1)[0]["question_id"] == "q-1"

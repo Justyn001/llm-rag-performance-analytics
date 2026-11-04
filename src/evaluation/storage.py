@@ -38,6 +38,7 @@ HUMAN_RATING_FIELDS = [
 CSV_FIELDS = [
     "run_id",
     "question_id",
+    "repetition",
     "dataset",
     "split",
     "set_type",
@@ -55,7 +56,12 @@ CSV_FIELDS = [
     "context_titles_json",
     "retrieval_time_ms",
     "generation_time_ms",
+    "retry_backoff_time_ms",
+    "failed_attempt_time_ms",
+    "retry_count",
     "total_time_ms",
+    "max_tokens",
+    "num_ctx",
     "tokens_in",
     "tokens_out",
     "tokens_per_second",
@@ -79,6 +85,7 @@ CSV_FIELDS = [
 RESULT_COLUMNS = [
     "run_id",
     "question_id",
+    "repetition",
     "question",
     "answerable",
     "expected_answer",
@@ -90,7 +97,12 @@ RESULT_COLUMNS = [
     "context_titles_json",
     "retrieval_time_ms",
     "generation_time_ms",
+    "retry_backoff_time_ms",
+    "failed_attempt_time_ms",
+    "retry_count",
     "total_time_ms",
+    "max_tokens",
+    "num_ctx",
     "tokens_in",
     "tokens_out",
     "tokens_per_second",
@@ -133,6 +145,7 @@ CREATE TABLE IF NOT EXISTS results (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     run_id TEXT NOT NULL REFERENCES runs(run_id) ON DELETE CASCADE,
     question_id TEXT NOT NULL,
+    repetition INTEGER NOT NULL DEFAULT 1,
     question TEXT NOT NULL,
     answerable INTEGER NOT NULL,
     expected_answer TEXT,
@@ -144,7 +157,12 @@ CREATE TABLE IF NOT EXISTS results (
     context_titles_json TEXT NOT NULL,
     retrieval_time_ms REAL NOT NULL DEFAULT 0,
     generation_time_ms REAL NOT NULL DEFAULT 0,
+    retry_backoff_time_ms REAL NOT NULL DEFAULT 0,
+    failed_attempt_time_ms REAL NOT NULL DEFAULT 0,
+    retry_count INTEGER NOT NULL DEFAULT 0,
     total_time_ms REAL NOT NULL DEFAULT 0,
+    max_tokens INTEGER NOT NULL DEFAULT 0,
+    num_ctx INTEGER,
     tokens_in INTEGER NOT NULL DEFAULT 0,
     tokens_out INTEGER NOT NULL DEFAULT 0,
     tokens_per_second REAL NOT NULL DEFAULT 0,
@@ -165,7 +183,7 @@ CREATE TABLE IF NOT EXISTS results (
     judged INTEGER NOT NULL DEFAULT 0,
     error TEXT,
     raw_json TEXT NOT NULL,
-    UNIQUE(run_id, question_id)
+    UNIQUE(run_id, repetition, question_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_results_run_id ON results(run_id);
@@ -209,6 +227,7 @@ class EvaluationStore:
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._conn.execute("PRAGMA foreign_keys=ON")
         self._conn.executescript(_SCHEMA)
+        self._migrate_results_schema()
         self._conn.commit()
 
         self._jsonl_handle: Any = None
@@ -221,6 +240,68 @@ class EvaluationStore:
 
     def __exit__(self, *exc_info: object) -> None:
         self.close()
+
+    def _migrate_results_schema(self) -> None:
+        """Upgrade a P0.4 ``results`` table to the repetition-aware schema."""
+        columns = {
+            row["name"] for row in self._conn.execute("PRAGMA table_info(results)").fetchall()
+        }
+        required = {
+            "repetition",
+            "retry_backoff_time_ms",
+            "failed_attempt_time_ms",
+            "retry_count",
+            "max_tokens",
+            "num_ctx",
+        }
+        if required <= columns and self._has_repetition_unique_index():
+            return
+
+        self._conn.execute("PRAGMA foreign_keys=OFF")
+        self._conn.execute("ALTER TABLE results RENAME TO results_legacy")
+        self._conn.execute("DROP INDEX IF EXISTS idx_results_run_id")
+        # _SCHEMA uses IF NOT EXISTS, so this recreates only the results table.
+        self._conn.executescript(_SCHEMA)
+
+        legacy_columns = {
+            row["name"]
+            for row in self._conn.execute("PRAGMA table_info(results_legacy)").fetchall()
+        }
+        defaults = {
+            "repetition": "1",
+            "retry_backoff_time_ms": "0",
+            "failed_attempt_time_ms": "0",
+            "retry_count": "0",
+            "max_tokens": "0",
+            "num_ctx": "NULL",
+        }
+        select_columns = ", ".join(
+            column if column in legacy_columns else defaults.get(column, "NULL")
+            for column in RESULT_COLUMNS
+        )
+        insert_columns = ", ".join(RESULT_COLUMNS)
+        self._conn.execute(
+            f"INSERT INTO results ({insert_columns}) "
+            f"SELECT {select_columns} FROM results_legacy"
+        )
+        self._conn.execute("DROP TABLE results_legacy")
+        self._conn.execute("PRAGMA foreign_keys=ON")
+        self._conn.commit()
+
+    def _has_repetition_unique_index(self) -> bool:
+        indexes = self._conn.execute("PRAGMA index_list(results)").fetchall()
+        for index in indexes:
+            if not index["unique"]:
+                continue
+            columns = [
+                row["name"]
+                for row in self._conn.execute(
+                    f"PRAGMA index_info({index['name']})"
+                ).fetchall()
+            ]
+            if columns == ["run_id", "repetition", "question_id"]:
+                return True
+        return False
 
     def _close_run_files(self) -> None:
         if self._jsonl_handle is not None:
@@ -311,11 +392,20 @@ class EvaluationStore:
         )
         self._conn.commit()
 
-    def get_records(self, run_id: str) -> list[dict[str, Any]]:
+    def get_records(
+        self,
+        run_id: str,
+        *,
+        repetition: int | None = None,
+    ) -> list[dict[str, Any]]:
         """Read raw records for a run from the SQLite mirror."""
-        rows = self._conn.execute(
-            "SELECT raw_json FROM results WHERE run_id = ? ORDER BY id", (run_id,)
-        ).fetchall()
+        query = "SELECT raw_json FROM results WHERE run_id = ?"
+        params: list[Any] = [run_id]
+        if repetition is not None:
+            query += " AND repetition = ?"
+            params.append(repetition)
+        query += " ORDER BY id"
+        rows = self._conn.execute(query, params).fetchall()
         return [json.loads(row["raw_json"]) for row in rows]
 
     def get_run(self, run_id: str) -> dict[str, Any] | None:
@@ -415,6 +505,7 @@ class EvaluationStore:
         return {
             "run_id": record.get("run_id"),
             "question_id": record.get("question_id"),
+            "repetition": record.get("repetition", 1),
             "dataset": record.get("dataset"),
             "split": record.get("split"),
             "set_type": record.get("set_type"),
@@ -440,7 +531,12 @@ class EvaluationStore:
             ),
             "retrieval_time_ms": record.get("retrieval_time_ms"),
             "generation_time_ms": record.get("generation_time_ms"),
+            "retry_backoff_time_ms": record.get("retry_backoff_time_ms"),
+            "failed_attempt_time_ms": record.get("failed_attempt_time_ms"),
+            "retry_count": record.get("retry_count"),
             "total_time_ms": record.get("total_time_ms"),
+            "max_tokens": record.get("max_tokens"),
+            "num_ctx": record.get("num_ctx"),
             "tokens_in": record.get("tokens_in"),
             "tokens_out": record.get("tokens_out"),
             "tokens_per_second": record.get("tokens_per_second"),
@@ -467,6 +563,7 @@ class EvaluationStore:
         return (
             record.get("run_id"),
             record.get("question_id"),
+            int(record.get("repetition") or 1),
             record.get("question"),
             int(bool(record.get("answerable"))),
             record.get("expected_answer"),
@@ -478,7 +575,12 @@ class EvaluationStore:
             json.dumps(record.get("context_titles", []), ensure_ascii=False, default=_json_default),
             float(record.get("retrieval_time_ms") or 0),
             float(record.get("generation_time_ms") or 0),
+            float(record.get("retry_backoff_time_ms") or 0),
+            float(record.get("failed_attempt_time_ms") or 0),
+            int(record.get("retry_count") or 0),
             float(record.get("total_time_ms") or 0),
+            int(record.get("max_tokens") or 0),
+            record.get("num_ctx"),
             int(record.get("tokens_in") or 0),
             int(record.get("tokens_out") or 0),
             float(record.get("tokens_per_second") or 0),
