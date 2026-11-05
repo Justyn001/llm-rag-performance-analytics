@@ -128,10 +128,7 @@ def test_store_accepts_same_question_in_multiple_repetitions(tmp_path):
         store.append(make_record(run_id="run-1", question_id="q-1", repetition=2))
 
         assert len(store.get_records("run-1")) == 2
-        assert [
-            record["repetition"]
-            for record in store.get_records("run-1", repetition=2)
-        ] == [2]
+        assert [record["repetition"] for record in store.get_records("run-1", repetition=2)] == [2]
 
 
 def test_store_migrates_legacy_results_table(tmp_path):
@@ -233,8 +230,7 @@ def test_store_migrates_legacy_results_table(tmp_path):
         assert records[0]["question_id"] == "q-1"
         assert records[0]["repetition"] == 1
         columns = {
-            row["name"]
-            for row in store._conn.execute("PRAGMA table_info(results)").fetchall()
+            row["name"] for row in store._conn.execute("PRAGMA table_info(results)").fetchall()
         }
         assert {"repetition", "retry_count", "max_tokens", "num_ctx"} <= columns
         assert store.get_records("run-legacy", repetition=1)[0]["question_id"] == "q-1"

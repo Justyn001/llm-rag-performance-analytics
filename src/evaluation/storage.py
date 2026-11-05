@@ -281,8 +281,7 @@ class EvaluationStore:
         )
         insert_columns = ", ".join(RESULT_COLUMNS)
         self._conn.execute(
-            f"INSERT INTO results ({insert_columns}) "
-            f"SELECT {select_columns} FROM results_legacy"
+            f"INSERT INTO results ({insert_columns}) SELECT {select_columns} FROM results_legacy"
         )
         self._conn.execute("DROP TABLE results_legacy")
         self._conn.execute("PRAGMA foreign_keys=ON")
@@ -295,9 +294,7 @@ class EvaluationStore:
                 continue
             columns = [
                 row["name"]
-                for row in self._conn.execute(
-                    f"PRAGMA index_info({index['name']})"
-                ).fetchall()
+                for row in self._conn.execute(f"PRAGMA index_info({index['name']})").fetchall()
             ]
             if columns == ["run_id", "repetition", "question_id"]:
                 return True

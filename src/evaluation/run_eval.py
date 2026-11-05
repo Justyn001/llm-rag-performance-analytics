@@ -135,9 +135,7 @@ def _print_performance(summary: dict) -> None:
     performance = summary.get("performance") or {}
     if not performance:
         return
-    print(
-        f"\n  performance (n per metric, CI {summary.get('confidence_level', 0.95):.0%}):"
-    )
+    print(f"\n  performance (n per metric, CI {summary.get('confidence_level', 0.95):.0%}):")
     print(
         f"  {'metric':24s} {'n':>4s} {'mean':>10s} {'median':>10s} "
         f"{'stdev':>10s} {'ci_low':>10s} {'ci_high':>10s}"

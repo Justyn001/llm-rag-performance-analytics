@@ -383,12 +383,8 @@ def _evaluate_one(
         "context_titles": context_titles,
         "retrieval_time_ms": float(getattr(response, "retrieval_time_ms", 0.0) or 0.0),
         "generation_time_ms": float(getattr(response, "generation_time_ms", 0.0) or 0.0),
-        "retry_backoff_time_ms": float(
-            getattr(response, "retry_backoff_time_ms", 0.0) or 0.0
-        ),
-        "failed_attempt_time_ms": float(
-            getattr(response, "failed_attempt_time_ms", 0.0) or 0.0
-        ),
+        "retry_backoff_time_ms": float(getattr(response, "retry_backoff_time_ms", 0.0) or 0.0),
+        "failed_attempt_time_ms": float(getattr(response, "failed_attempt_time_ms", 0.0) or 0.0),
         "retry_count": int(getattr(response, "retry_count", 0) or 0),
         "total_time_ms": float(getattr(response, "total_time_ms", 0.0) or 0.0),
         "max_tokens": int(getattr(response, "max_tokens", 0) or 0),
@@ -485,12 +481,8 @@ def _warmup_summary(
             "generation_time_ms": float(getattr(response, "generation_time_ms", 0.0) or 0.0),
             "total_time_ms": float(getattr(response, "total_time_ms", 0.0) or 0.0),
             "tokens_out": int(getattr(response, "tokens_out", 0) or 0),
-            "tokens_per_second": float(
-                getattr(response, "tokens_per_second", 0.0) or 0.0
-            ),
-            "retry_backoff_time_ms": float(
-                getattr(response, "retry_backoff_time_ms", 0.0) or 0.0
-            ),
+            "tokens_per_second": float(getattr(response, "tokens_per_second", 0.0) or 0.0),
+            "retry_backoff_time_ms": float(getattr(response, "retry_backoff_time_ms", 0.0) or 0.0),
         }
         for response in responses
     ]
@@ -516,9 +508,7 @@ def _question_statistics(
 
     statistics: list[dict[str, Any]] = []
     for question_id in order:
-        subset = [
-            record for record in records if str(record.get("question_id", "")) == question_id
-        ]
+        subset = [record for record in records if str(record.get("question_id", "")) == question_id]
         completed = [record for record in subset if not record.get("error")]
         statistics.append(
             {
@@ -542,11 +532,7 @@ def _repetition_statistics(
 ) -> list[dict[str, Any]]:
     statistics: list[dict[str, Any]] = []
     for repetition in range(1, protocol.repetitions + 1):
-        subset = [
-            record
-            for record in records
-            if int(record.get("repetition") or 1) == repetition
-        ]
+        subset = [record for record in records if int(record.get("repetition") or 1) == repetition]
         statistics.append(
             {
                 "repetition": repetition,

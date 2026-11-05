@@ -313,8 +313,7 @@ def agreement_report(store: EvaluationStore, run_id: str) -> dict[str, Any]:
         }
 
     record_map = {
-        str(record["question_id"]): record
-        for record in store.get_records(run_id, repetition=1)
+        str(record["question_id"]): record for record in store.get_records(run_id, repetition=1)
     }
     rated_ids = set(by_question)
     answerable_count = sum(

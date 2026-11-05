@@ -181,9 +181,7 @@ def test_runner_keeps_going_after_pipeline_error(tmp_path, benchmark_path, singl
         assert result.summary["completed"] == 1
 
 
-def test_runner_records_judge_error_without_losing_answer(
-    tmp_path, benchmark_path, single_pass
-):
+def test_runner_records_judge_error_without_losing_answer(tmp_path, benchmark_path, single_pass):
     with EvaluationStore(tmp_path) as store:
         result = run_evaluation(
             benchmark_path=benchmark_path,
